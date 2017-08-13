@@ -1,4 +1,4 @@
-package rbots.kz.personalaccount.jpa;
+package rbots.kz.SecurityService.jpa;
 
 
 import lombok.AllArgsConstructor;
