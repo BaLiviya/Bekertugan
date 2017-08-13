@@ -1,4 +1,4 @@
-package rbots.kz.SecurityService;
+package rbots.kz;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

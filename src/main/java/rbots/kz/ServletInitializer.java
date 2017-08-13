@@ -1,7 +1,8 @@
-package rbots.kz.SecurityService;
+package rbots.kz;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+import rbots.kz.PersonalAccountApplication;
 
 public class ServletInitializer extends SpringBootServletInitializer {
 
