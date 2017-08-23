@@ -1,4 +1,4 @@
-package rbots.kz.messageSystem;
+package rbots.kz.MessageSystem;
 
 import java.util.HashMap;
 import java.util.Map;

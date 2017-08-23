@@ -1,4 +1,4 @@
-package rbots.kz.messageSystem;
+package rbots.kz.MessageSystem;
 
 public class TimeHelper {
     public static void sleep(int period){

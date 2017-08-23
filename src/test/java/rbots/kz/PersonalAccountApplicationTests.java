@@ -1,4 +1,4 @@
-package rbots.kz.SecurityService;
+package rbots.kz;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

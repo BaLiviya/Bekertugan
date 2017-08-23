@@ -1,41 +1,43 @@
 package rbots.kz.SecurityService.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import rbots.kz.SecurityService.dao.RoleRepository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import rbots.kz.SecurityService.dao.UserRepository;
-import rbots.kz.SecurityService.jpa.Role;
+import rbots.kz.SecurityService.exception.UserAlreadyExistException;
 import rbots.kz.SecurityService.jpa.User;
-
-import java.util.HashSet;
-import java.util.Set;
+import rbots.kz.SecurityService.security.Role;
 
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    private RoleRepository roleRepository;
-
-    @Bean
-    private PasswordEncoder bCryptPasswordEncoder() {
-        return new BCryptPasswordEncoder();
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public void save(User user) {
-        user.setPassword(bCryptPasswordEncoder().encode(user.getPassword()));
-        Set<Role> roles = new HashSet<>();
-        roles.add(roleRepository.getOne(1));
-        user.setRoles(roles);
-        userRepository.save(user);
-    }
-
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public User add(User user) throws UserAlreadyExistException {
+        Assert.notNull(user, "User object cannot be null");
+        Assert.isNull(user.getId(), "User id filed must be null");
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new UserAlreadyExistException("User already exist with username: " + user.getUsername());
+        }
+        String rawPassword = user.getPassword();
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setRole(Role.ROLE_USER);
+        logger.info("Saving user: {}", user);
+        return userRepository.save(user);
     }
 }

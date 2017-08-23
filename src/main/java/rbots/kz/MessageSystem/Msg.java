@@ -1,4 +1,4 @@
-package rbots.kz.messageSystem;
+package rbots.kz.MessageSystem;
 
 public abstract class Msg {
     private Address from;

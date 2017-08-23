@@ -1,12 +1,15 @@
 package rbots.kz.SecurityService.jpa;
 
 import lombok.*;
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotEmpty;
+import rbots.kz.SecurityService.security.Role;
 
 import javax.persistence.*;
-import java.util.Set;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -18,17 +21,38 @@ public class User {
     @Column(name = "id")
     private Integer id;
 
+    @NotEmpty
+    @Size(min = 8, max = 32)
     @Column(name = "username")
     private String username;
 
+    @NotEmpty
+    @Size(min = 8, max = 32)
     @Column(name = "password")
     private String password;
 
-    @Transient
-    private String confirmPassword;
+    @NotEmpty
+    @Size(max = 100)
+    private String firstName;
 
-    @ManyToMany
-    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles;
+    @NotEmpty
+    @Size(max = 100)
+    private String lastName;
+
+    @Email
+    @Size(max = 100)
+    private String email;
+
+    @NotNull
+    private Role role;
+
+    public User(User user) {
+        this.id = user.getId();
+        this.username = user.getUsername();
+        this.password = user.getPassword();
+        this.firstName = user.getFirstName();
+        this.lastName = user.getLastName();
+        this.email = user.getEmail();
+        this.role = user.getRole();
+    }
 }
