@@ -27,7 +27,6 @@ public class User {
     private String username;
 
     @NotEmpty
-    @Size(min = 8, max = 32)
     @Column(name = "password")
     private String password;
 

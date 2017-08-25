@@ -1,5 +1,6 @@
 package rbots.kz.SecurityService.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +14,9 @@ import rbots.kz.SecurityService.exception.UserAlreadyExistException;
 import rbots.kz.SecurityService.jpa.User;
 import rbots.kz.SecurityService.security.Role;
 
+@Slf4j
 @Service
 public class UserService {
-
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -37,7 +37,7 @@ public class UserService {
         String rawPassword = user.getPassword();
         user.setPassword(passwordEncoder.encode(rawPassword));
         user.setRole(Role.ROLE_USER);
-        logger.info("Saving user: {}", user);
+        log.info("Saving user: {}", user);
         return userRepository.save(user);
     }
 }

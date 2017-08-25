@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+    <title>Веб чат</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script>
+        function start() {
+            var methodURL = "/json/ajaxJsonRequest";
+            $.ajax({
+                type: "GET",
+                url: methodURL,
+                data: $("#ajaxRestForm").serialize(),
+                success : function (data) {
+                    $("#jsonMessage").text(data);
+                },
+                error : function (e) {
+                }
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <form id="ajaxRestForm" name="ajaxRestForm" action="/json/ajaxJsonRequest" method="post">
+        <input type="text" name="message" id="message"/>
+        <input type="button" value="AJAX REQUEST" onclick="start()" />
+    </form>
+
+    <span id="jsonMessage" ></span>
+</body>
+</html>
