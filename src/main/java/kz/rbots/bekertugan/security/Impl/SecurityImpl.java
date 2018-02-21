@@ -24,7 +24,7 @@ public class SecurityImpl implements ISecurity {
 
 
     @Override
-    public boolean tryToLogin(String username, String password) {
+    public UserDetails tryToLoginAndGetUser(String username, String password) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         if (userDetails != null && new BCryptPasswordEncoder().matches(password,userDetails.getPassword())){
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
@@ -35,10 +35,12 @@ public class SecurityImpl implements ISecurity {
             SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             //залогинились
             }
-            return true;
+            return userDetails;
         } else {
-         return false;
+         return null;
         }
     }
+
+
 
 }

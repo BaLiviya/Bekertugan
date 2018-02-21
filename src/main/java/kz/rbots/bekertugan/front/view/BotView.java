@@ -11,4 +11,6 @@ public class BotView extends VerticalLayout implements View {
         setSpacing(false);
         addComponent(new Label("Вау охуеть! Бартос наколхозил хуету!"));
     }
+
+
 }

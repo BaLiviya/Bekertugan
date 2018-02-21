@@ -28,6 +28,7 @@ public class BotDialogUi extends UI implements Broadcaster.BotUpdatesListener {
     //    private static final VerticalLayout messages = new VerticalLayout();
     private long lastSender = 0;
     private final VerticalLayout messages = new VerticalLayout();
+    private Messages botmessages = new Messages();
 
     //АБСОЛЮТНО ВЕЗДЕ ЕБАНЫЕ КОСТЫЛИ
     @Override
@@ -53,7 +54,7 @@ public class BotDialogUi extends UI implements Broadcaster.BotUpdatesListener {
         });
         final VerticalLayout inputTextLayout = new VerticalLayout();
         inputTextLayout.addComponents(inputTextField, sendButton,logout);
-        setContent(new VerticalLayout(messages, inputTextLayout));
+        setContent(new VerticalLayout(messages, inputTextLayout,botmessages));
         Broadcaster.register(this);
     }
 

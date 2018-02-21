@@ -1,6 +1,9 @@
 package kz.rbots.bekertugan.security;
 
+import org.springframework.security.core.userdetails.UserDetails;
+
 public interface ISecurity {
-    boolean tryToLogin(String username, String password);
+    UserDetails tryToLoginAndGetUser(String username, String password);
+
 
 }

@@ -77,7 +77,7 @@ public class LoginUI extends UI {
     private void loginButtonClick(Button.ClickEvent e) {
         //authorize/authenticate user
         //tell spring that my user is authenticated and dispatch to my mainUI
-        if (iSecurity.tryToLogin(user.getValue(), password.getValue())) {
+        if (iSecurity.tryToLoginAndGetUser(user.getValue(), password.getValue())!=null) {
             UI.getCurrent().getPage().setLocation("/bot-dialog");
         } else {
             showInvalidLoginOrPasswordMessage();
