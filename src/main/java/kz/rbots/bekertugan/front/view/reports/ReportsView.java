@@ -34,7 +34,7 @@ import java.util.Date;
 public final class ReportsView extends TabSheet implements View, TabSheet.CloseHandler,
         ReportEditor.ReportEditorListener {
 
-    public static final String CONFIRM_DIALOG_ID = "confirm-dialog";
+    public static final String CONFIRM_DIALOG_ID = "confirm-dialogs";
 
     public ReportsView() {
         setSizeFull();

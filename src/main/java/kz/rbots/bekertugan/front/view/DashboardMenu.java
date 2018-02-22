@@ -1,18 +1,16 @@
 package kz.rbots.bekertugan.front.view;
 
 import com.google.common.eventbus.Subscribe;
+import com.vaadin.annotations.Push;
 import com.vaadin.icons.VaadinIcons;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
+import kz.rbots.bekertugan.entities.User;
 import kz.rbots.bekertugan.front.BotBoardUI;
 import kz.rbots.bekertugan.front.event.BotBoardEvent;
 import kz.rbots.bekertugan.front.event.BotBoardEventBus;
-import kz.rbots.bekertugan.services.CustomUserDetailService;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-
 public class DashboardMenu extends CustomComponent {
     public static final String ID = "dashboard-menu";
     public static final String REPORTS_BADGE_ID = "dashboard-menu-reports-badge";
@@ -20,6 +18,7 @@ public class DashboardMenu extends CustomComponent {
     private static final String STYLE_VISIBLE = "valo-menu-visible";
     private Label notificationsBadge;
     private Label reportsBadge;
+    private Label analyticsBadge;
     private MenuBar.MenuItem settingsItem;
 
 
@@ -63,10 +62,9 @@ public class DashboardMenu extends CustomComponent {
         return logoWrapper;
     }
 
-    //Какого то хуя не хочет аутовайред дело уебак для юзердетайлс
-    private UserDetails getCurrentUser() {
-        UserDetailsService userDetailsService = new CustomUserDetailService();
-        return userDetailsService.loadUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+    private User getCurrentUser() {
+        return (User) VaadinSession.getCurrent()
+                .getAttribute(User.class.getName());
     }
 
     private Component buildUserMenu() {
@@ -83,8 +81,8 @@ public class DashboardMenu extends CustomComponent {
 
     @Subscribe
     public void updateUserName(final BotBoardEvent.ProfileUpdatedEvent event) {
-        UserDetails user = getCurrentUser();
-        settingsItem.setText(user.getUsername());
+//        UserDetails user = getCurrentUser();
+//        settingsItem.setText(user.getUsername());
     }
 
     private Component buildToggleButton() {
@@ -122,9 +120,12 @@ public class DashboardMenu extends CustomComponent {
                 menuItemComponent = buildBadgeWrapper(menuItemComponent,
                         reportsBadge);
             }
-//            if (view == DashboardViewType.ANALYTICS) {
-//
-//            }
+            if (view == DashboardViewType.ANALYTICS) {
+                analyticsBadge = new Label();
+                analyticsBadge.setId("547");
+                menuItemComponent = buildBadgeWrapper(menuItemComponent,
+                        analyticsBadge);
+            }
 
             menuItemsLayout.addComponent(menuItemComponent);
         }

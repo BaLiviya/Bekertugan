@@ -6,10 +6,7 @@ import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
-import kz.rbots.bekertugan.security.ISecurity;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 @SpringUI(path = "/login")
 @Title("LoginPage")
@@ -22,8 +19,7 @@ public class LoginUI extends UI {
     private VerticalLayout fields;
     private Label errorMessage = new Label("Invalid password or username");
 
-    @Autowired
-    ISecurity iSecurity;
+
 
     @Override
     protected void init(VaadinRequest request) {
@@ -56,13 +52,13 @@ public class LoginUI extends UI {
     }
     //Чекаем есть ли аутенфикация у юзера, и если она не анонимная то предиректим бот уи
     private void checkAuthorized(){
-        if (SecurityContextHolder.getContext().getAuthentication()!= null
-                && SecurityContextHolder.getContext().getAuthentication().isAuthenticated()
-                && !(SecurityContextHolder.getContext().getAuthentication()
-                instanceof AnonymousAuthenticationToken) )
-        {
-            UI.getCurrent().getPage().setLocation("/bot-dialog");
-        }
+//        if (SecurityContextHolder.getContext().getAuthentication()!= null
+//                && SecurityContextHolder.getContext().getAuthentication().isAuthenticated()
+//                && !(SecurityContextHolder.getContext().getAuthentication()
+//                instanceof AnonymousAuthenticationToken) )
+//        {
+//            UI.getCurrent().getPage().setLocation("/bot-dialogs");
+//        }
     }
     //Если пароль непральный то удаляем ерормесадж на всякий (вдруг он там был)
     //и показываем его снова
@@ -75,12 +71,12 @@ public class LoginUI extends UI {
 
     //Чекаем зареган ли чел, ну и все такое
     private void loginButtonClick(Button.ClickEvent e) {
-        //authorize/authenticate user
-        //tell spring that my user is authenticated and dispatch to my mainUI
-        if (iSecurity.tryToLoginAndGetUser(user.getValue(), password.getValue())!=null) {
-            UI.getCurrent().getPage().setLocation("/bot-dialog");
-        } else {
-            showInvalidLoginOrPasswordMessage();
-        }
+//        //authorize/authenticate user
+//        //tell spring that my user is authenticated and dispatch to my mainUI
+//        if (iSecurity.tryToLoginAndGetUser(user.getValue(), password.getValue())!=null) {
+//            UI.getCurrent().getPage().setLocation("/bot-dialogs");
+//        } else {
+//            showInvalidLoginOrPasswordMessage();
+//        }
     }
 }

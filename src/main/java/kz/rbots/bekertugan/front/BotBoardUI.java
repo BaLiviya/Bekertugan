@@ -1,42 +1,34 @@
 package kz.rbots.bekertugan.front;
 
 import com.google.common.eventbus.Subscribe;
+import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Title;
 import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.Position;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.themes.ValoTheme;
 import kz.rbots.bekertugan.broadcaster.Broadcaster;
+import kz.rbots.bekertugan.entities.User;
 import kz.rbots.bekertugan.front.data.DataProvider;
 import kz.rbots.bekertugan.front.data.mock.DummyDataProvider;
 import kz.rbots.bekertugan.front.event.BotBoardEvent;
 import kz.rbots.bekertugan.front.event.BotBoardEventBus;
-import kz.rbots.bekertugan.front.view.BotView;
 import kz.rbots.bekertugan.front.view.LoginView;
 import kz.rbots.bekertugan.front.view.MainView;
-import kz.rbots.bekertugan.security.ISecurity;
-import kz.rbots.bekertugan.services.CustomUserDetailService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.telegram.telegrambots.api.objects.Update;
 
 @SpringUI(path = "/logv2")
 @Title("Dashboard")
+@Push
 public final class BotBoardUI extends UI {
 
     private final BotBoardEventBus botBoardEventBus = new BotBoardEventBus();
     private final DataProvider dummy = new DummyDataProvider();
 
 
-    @Autowired
-    private  CustomUserDetailService customUserDetailService;
-    @Autowired
-    private ISecurity iSecurity;
 
 
     @Override
@@ -51,41 +43,51 @@ public final class BotBoardUI extends UI {
     }
 
     private void updateContent(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails user = customUserDetailService.loadUserByUsername(authentication.getName());
-        if (user != null && authentication.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("ROLE_ADMIN"))) {
+        User user = (User) VaadinSession.getCurrent()
+                .getAttribute(User.class.getName());
+        if (user != null && "admin".equals(user.getRole())) {
             // Authenticated user
             setContent(new MainView());
+            removeStyleName("loginview");
+            getNavigator().navigateTo(getNavigator().getState());
         } else {
             setContent(new LoginView());
+            addStyleName("loginview");
         }
     }
     @Subscribe
     public void userLoginRequested(final BotBoardEvent.UserLoginRequestedEvent event) {
-
-        UserDetails userDetails = iSecurity.tryToLoginAndGetUser(event.getUserName(), event.getPassword());
-
-        if (userDetails!=null){
-
-         updateContent();
-
-        } else {
-
-            Notification notification = new Notification("Error!");
-            notification.setDescription("Invalid username or password!");
-            notification.setPosition(Position.BOTTOM_CENTER);
-            notification.setDelayMsec(3000);
-            notification.setStyleName("tray dark small closable login-help");
-            notification.show(UI.getCurrent().getPage());
-
-        }
+        User user = new User();
+        user.setFirstName("vbl");
+        user.setLastName("fd");
+        user.setRole("admin");
+// getDataProvider().authenticate(event.getUserName(),
+//                event.getPassword());
+        VaadinSession.getCurrent().setAttribute(User.class.getName(), user);
+        updateContent();
+//        UserDetails userDetails = iSecurity.tryToLoginAndGetUser(event.getUserName(), event.getPassword());
+//
+//        if (userDetails!=null){
+//
+//         updateContent();
+//
+//        } else {
+//
+//            Notification notification = new Notification("Error!");
+//            notification.setDescription("Invalid username or password!");
+//            notification.setPosition(Position.BOTTOM_CENTER);
+//            notification.setDelayMsec(3000);
+//            notification.setStyleName("tray dark small closable login-help");
+//            notification.show(UI.getCurrent().getPage());
+//
+//        }
     }
 
 
 
     @Subscribe
     public void userLoggedOut(final BotBoardEvent.UserLoggedOutEvent event) {
-        SecurityContextHolder.clearContext();
+        VaadinSession.getCurrent().close();
         Page.getCurrent().reload();
     }
 

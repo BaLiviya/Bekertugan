@@ -1,15 +1,15 @@
 package kz.rbots.bekertugan.front.data.mock;
 
+import kz.rbots.bekertugan.entities.User;
 import kz.rbots.bekertugan.front.data.DataProvider;
 import kz.rbots.bekertugan.front.domain.DashboardNotification;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class DummyDataProvider implements DataProvider {
     @Override
-    public UserDetails authenticate(String userName, String password) {
+    public User authenticate(String userName, String password) {
         return null;
     }
 

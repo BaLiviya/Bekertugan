@@ -1,26 +1,19 @@
 package kz.rbots.bekertugan.front.view.dashboard;
 
-import com.google.common.eventbus.Subscribe;
+
 import com.vaadin.annotations.Push;
-import com.vaadin.event.LayoutEvents;
-import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.Responsive;
+import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import kz.rbots.bekertugan.broadcaster.Broadcaster;
-import kz.rbots.bekertugan.front.BotBoardUI;
-import kz.rbots.bekertugan.front.domain.DashboardNotification;
-import kz.rbots.bekertugan.front.event.BotBoardEvent;
 import kz.rbots.bekertugan.front.event.BotBoardEventBus;
-import org.telegram.telegrambots.api.objects.Update;
-
-import java.time.LocalDateTime;
-import java.util.Collection;
+import kz.rbots.bekertugan.front.view.dialogs.Dialogs;
 @Push
 public final class DashboardView extends Panel implements View,
-        DashboardEdit.DashboardEditListener, Broadcaster.BotUpdatesListener {
+        DashboardEdit.DashboardEditListener {
 
     public static final String TITLE_ID = "dashboard-title";
 
@@ -32,7 +25,6 @@ public final class DashboardView extends Panel implements View,
     Component content;
 
     public DashboardView() {
-        Broadcaster.register(this);
         addStyleName(ValoTheme.PANEL_BORDERLESS);
         setSizeFull();
         BotBoardEventBus.register(this);
@@ -44,12 +36,12 @@ public final class DashboardView extends Panel implements View,
         setContent(root);
         Responsive.makeResponsive(root);
 
-        root.addComponent(buildHeader());
+//        root.addComponent(buildHeader());
 
-        root.addComponent(buildSparklines());
-
-        content = buildContent();
-        root.addComponent(content);
+//        root.addComponent(buildSparklines());
+//        content = buildContent();
+//        root.addComponent(content);
+        root.addComponent(buildDialog());
     }
 
     private Component buildSparklines() {
@@ -112,9 +104,13 @@ public final class DashboardView extends Panel implements View,
 //        topGrossingMoviesChart.setSizeFull();
 //        return createContentWrapper(topGrossingMoviesChart);
 //        chat = createContentWrapper(new Label("Syka"));
-        chat = new VerticalLayout(new Label("suka"));
-        return chat;
+//        chat = new VerticalLayout(new Label("suka"));
+//        return chat;
 //        return createContentWrapper(new Label("syka"));
+        Dialogs dialogs = new Dialogs();
+        dialogs.setWidth("100%");
+        dialogs.setHeight("100%");
+        return dialogs;
     }
 
 
@@ -135,18 +131,18 @@ public final class DashboardView extends Panel implements View,
         titleLabel.setValue(name);
     }
 
-    //TODO Тут надо захуярить обнову
-    @Override
-    public void receiveBroadcast(Update update) {
-        getUI().access(()->
-        {
-            chat.removeAllComponents();
-            chat.addComponent(new Label(String.valueOf(LocalDateTime.now().getSecond())));
-            root.addComponent(new Label("Da blyad"));
-            System.out.println("rot ebal");
-
-        });
-    }
+//    //TODO Тут надо захуярить обнову
+//    @Override
+//    public void receiveBroadcast(Update update) {
+//        getUI().access(()->
+//        {
+//            chat.removeAllComponents();
+//            chat.addComponent(new Label(String.valueOf(LocalDateTime.now().getSecond())));
+//            root.addComponent(new Label(update.getMessage().getText()));
+//            System.out.println("rot ebal");
+//
+//        });
+//    }
 
 
 //    public static final class NotificationsButton extends Button {

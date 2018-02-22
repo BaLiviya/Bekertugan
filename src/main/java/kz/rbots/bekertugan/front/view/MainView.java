@@ -1,14 +1,16 @@
 package kz.rbots.bekertugan.front.view;
 
+import com.vaadin.spring.navigator.SpringViewProvider;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import kz.rbots.bekertugan.broadcaster.Broadcaster;
 import kz.rbots.bekertugan.front.DashboardNavigator;
-import org.telegram.telegrambots.api.objects.Update;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class MainView extends HorizontalLayout  {
+
+    @Autowired
+    private SpringViewProvider springViewProvider;
 
     public MainView() {
         setSizeFull();
@@ -25,6 +27,7 @@ public class MainView extends HorizontalLayout  {
 
         new DashboardNavigator(content);
     }
+
 
 
 }
