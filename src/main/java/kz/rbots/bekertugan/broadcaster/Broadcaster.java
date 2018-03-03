@@ -1,5 +1,6 @@
 package kz.rbots.bekertugan.broadcaster;
 
+import kz.rbots.bekertugan.entities.Dialog;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Update;
 
@@ -22,8 +23,13 @@ public class Broadcaster implements Serializable {
         void receiveBroadcast(SendMessage sendMessage);
     }
 
+    public interface TelegramDialogsUpdateListener {
+        void receiveBroadcast(Dialog dialog, String botToken);
+    }
+
     private static LinkedList<BotUpdatesListener> botListeners = new LinkedList<>();
     private static LinkedList<TelegramMessageSender> telegramListeners = new LinkedList<>();
+    private static LinkedList<TelegramDialogsUpdateListener> dialogsListeners = new LinkedList<>();
 
     public static synchronized void register(
             BotUpdatesListener listener) {
@@ -35,7 +41,16 @@ public class Broadcaster implements Serializable {
         botListeners.remove(listener);
     }
 
+    public static synchronized void registerDialogListener(
+            TelegramDialogsUpdateListener telegramDialogsUpdateListner){
+        dialogsListeners.add(telegramDialogsUpdateListner);
+    }
 
+    public static synchronized void newDialog(
+            final Dialog dialog,String token) {
+        for (final TelegramDialogsUpdateListener listener: dialogsListeners)
+            executorService.execute(() -> listener.receiveBroadcast(dialog,token));
+    }
 
     public static synchronized void broadcast(
             final Update update) {
@@ -56,6 +71,11 @@ public class Broadcaster implements Serializable {
 
     public static synchronized void unregisterBot(
             TelegramMessageSender listener) {
+        telegramListeners.remove(listener);
+    }
+
+    public static synchronized void unregisterDialogsListener(
+            TelegramDialogsUpdateListener listener) {
         telegramListeners.remove(listener);
     }
 }
