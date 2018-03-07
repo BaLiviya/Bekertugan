@@ -5,12 +5,19 @@ import com.vaadin.shared.Registration;
 import com.vaadin.ui.*;
 import kz.rbots.bekertugan.broadcaster.Broadcaster;
 import kz.rbots.bekertugan.entities.Dialog;
+import kz.rbots.bekertugan.front.data.mock.DummyDialogData;
+import kz.rbots.bekertugan.telegrambot.TelegramBot;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Dialogs extends Panel implements Broadcaster.TelegramDialogsUpdateListener {
     private VerticalLayout dialogs = new VerticalLayout();
     private boolean listIsEmpty;
+    private List<Dialog> dialogList = DummyDialogData.getAllDialogs().collect(Collectors.toList());
     public Dialogs() {
         super();
+        DummyDialogData.getAllDialogs().forEach(x->addNewDialog(x, TelegramBot.getToken()));
         this.setSizeFull();
         if (dialogs.getComponentCount()==0){
             Label noDialogs = new Label("Here is no dialogs");
@@ -51,8 +58,8 @@ public class Dialogs extends Panel implements Broadcaster.TelegramDialogsUpdateL
         + botToken +"/" + dialog.getAvatarFileId());
 //        ExternalResource externalResource = new ExternalResource(dialog.getAvatarFileId());
         Image image = new Image(dialog.getNameAndLastname(),externalResource);
-        image.setHeight("150px");
-        image.setWidth("150px");
+        image.setHeight("50px");
+        image.setWidth("50px");
         dialogs.addComponents(image);
         dialogs.addComponent(new Button("@"+dialog.getUserName()));
     }
