@@ -14,4 +14,8 @@ public class DummyDialogData {
 
     public static Stream<Dialog> getAllDialogs(){return list.stream(); }
 
+    public static Dialog getDialogByChatId(long chatId){
+        return list.stream().filter(x->x.getChatId()==chatId).findAny().get();
+    }
+
 }

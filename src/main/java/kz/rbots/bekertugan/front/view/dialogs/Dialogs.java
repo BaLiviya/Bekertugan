@@ -1,7 +1,7 @@
 package kz.rbots.bekertugan.front.view.dialogs;
 
-import com.vaadin.event.Action;
 import com.vaadin.event.ShortcutAction;
+import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.*;
@@ -81,48 +81,73 @@ public class Dialogs extends Panel implements Broadcaster.TelegramDialogsUpdateL
     }
 
     private class ChatWindow extends VerticalLayout implements Broadcaster.BotUpdatesListener {
-        private final String chatId;
+        private Image avatar;
         private final TextField textField = new TextField("Type text here: ");
         Button sendButton = new Button("Send Message");
         Button backToDialogs = new Button("Return");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        HorizontalLayout enterTextLayout = new HorizontalLayout();
+        AbsoluteLayout enterTextLayout = new AbsoluteLayout();
 
 
         private ChatWindow(String chatId) {
+            textField.addShortcutListener(new ShortcutListener("enterListener",ShortcutAction.KeyCode.ENTER,null) {
+                @Override
+                public void handleAction(Object o, Object o1) {
+                broadCastNewMessage(chatId);
+                }
+            });
+            Dialog dialog = DummyDialogData.getDialogByChatId(Long.parseLong(chatId));
+            ExternalResource externalResource = new ExternalResource("https://api.telegram.org/file/bot"
+                    + TelegramBot.getToken() +"/"
+                    + dialog.getAvatarFileId());
+            avatar = new Image(dialog.getNameAndLastname(),externalResource);
+            avatar.setWidth("75px");
+            avatar.setHeight("75px");
 
-            this.chatId = chatId;
-            sendButton.addClickListener(e-> {
-                Broadcaster.broadcastToBot(
-                    new SendMessage(chatId,textField.getValue()));
-            getUI().access(()->postMessage("[" +LocalDateTime.now().format(formatter)+"] Вы: " + textField.getValue()));});
+            sendButton.addClickListener(e-> getUI().access(()->broadCastNewMessage(chatId)));
+
             backToDialogs.addClickListener(e-> {
                 inChatWindow=false;
                 getUI().access(()->setContent(dialogsLayout));
                 Broadcaster.unregister(this);
                 detach();
             });
-            enterTextLayout.addComponent(textField);
-            enterTextLayout.addComponent(sendButton);
-            enterTextLayout.addComponent(backToDialogs);
+            textField.setWidth("90%");
+            enterTextLayout.setHeight("100px");
+            enterTextLayout.setWidth("100%");
+            enterTextLayout.addComponent(avatar);
+            enterTextLayout.addComponent(textField,"left: 80px; top: 20%");
+            enterTextLayout.addComponent(sendButton,"left: 80px; bottom: 0px");
+            enterTextLayout.addComponent(backToDialogs,"right: 0px ; top: 0px");
             Broadcaster.register(this);
             this.addComponent(enterTextLayout);
         }
 
+        private void broadCastNewMessage(String chatId){
+            Broadcaster.broadcastToBot(
+                    new SendMessage(chatId,textField.getValue()));
+            getUI().access(()->{postMessage("[" +
+                    LocalDateTime.now().format(formatter)+
+                    "] Вы: " + textField.getValue());
+            textField.clear();});
+
+        }
 
         @Override
         public void receiveBroadcast(Update update) {
 
             getUI().access(() -> postMessage("["+LocalDateTime.now().format(formatter)+ "] " +update.getMessage().getFrom().getFirstName() + ": "
                     + update.getMessage().getText()));
+
         }
 
         private void postMessage(String s) {
-
-        if (this.getComponentCount() > 10) {
+        if (this.getComponentCount() > 30) {
             this.removeComponent(this.getComponent(1));
         }
-        this.addComponent(new HorizontalLayout(new Label(s)));
+        HorizontalLayout newLine = new HorizontalLayout();
+        newLine.addComponent(new Label(s));
+        this.addComponent(newLine);
 
 
     }
