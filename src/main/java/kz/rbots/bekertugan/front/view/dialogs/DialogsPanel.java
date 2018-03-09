@@ -15,11 +15,11 @@ import org.telegram.telegrambots.api.objects.Update;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class Dialogs extends Panel implements Broadcaster.TelegramDialogsUpdateListener {
+public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUpdateListener {
     private VerticalLayout dialogsLayout = new VerticalLayout();
     private boolean listIsEmpty;
     private boolean inChatWindow;
-    public Dialogs() {
+    public DialogsPanel() {
         super();
         DummyDialogData.getAllDialogs().forEach(x->addNewDialog(x, TelegramBot.getToken()));
         this.setSizeFull();
@@ -113,10 +113,10 @@ public class Dialogs extends Panel implements Broadcaster.TelegramDialogsUpdateL
                 detach();
             });
             textField.setWidth("90%");
-            enterTextLayout.setHeight("100px");
+            enterTextLayout.setHeight("120px");
             enterTextLayout.setWidth("100%");
-            enterTextLayout.addComponent(avatar);
-            enterTextLayout.addComponent(textField,"left: 80px; top: 20%");
+            enterTextLayout.addComponent(avatar,"top: 15%");
+            enterTextLayout.addComponent(textField,"left: 80px; top: 25%");
             enterTextLayout.addComponent(sendButton,"left: 80px; bottom: 0px");
             enterTextLayout.addComponent(backToDialogs,"right: 0px ; top: 0px");
             Broadcaster.register(this);

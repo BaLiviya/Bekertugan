@@ -5,12 +5,10 @@ import com.vaadin.annotations.Push;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.Responsive;
-import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
-import kz.rbots.bekertugan.broadcaster.Broadcaster;
 import kz.rbots.bekertugan.front.event.BotBoardEventBus;
-import kz.rbots.bekertugan.front.view.dialogs.Dialogs;
+import kz.rbots.bekertugan.front.view.dialogs.DialogsPanel;
 @Push
 public final class DashboardView extends Panel implements View,
         DashboardEdit.DashboardEditListener {
@@ -107,10 +105,10 @@ public final class DashboardView extends Panel implements View,
 //        chat = new VerticalLayout(new Label("suka"));
 //        return chat;
 //        return createContentWrapper(new Label("syka"));
-        Dialogs dialogs = new Dialogs();
-        dialogs.setWidth("100%");
-        dialogs.setHeight("100%");
-        return dialogs;
+        DialogsPanel dialogsPanel = new DialogsPanel();
+        dialogsPanel.setWidth("100%");
+        dialogsPanel.setHeight("100%");
+        return dialogsPanel;
     }
 
 

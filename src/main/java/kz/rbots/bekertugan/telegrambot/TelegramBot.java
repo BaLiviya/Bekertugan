@@ -25,9 +25,9 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
             Broadcaster.broadcast(update);
             //TODO Сделай тут красиво жи есть х)))))))))))))))
             if (DummyDialogData.getAllDialogs().noneMatch(x -> x.getChatId() == update.getMessage().getFrom().getId())) {
-                String name = update.getMessage().getFrom().getFirstName() + (update.getMessage().getFrom().getLastName()
-                        != null ?
-                        update.getMessage().getFrom().getLastName() : " ");
+                String name = update.getMessage().getFrom().getFirstName() +
+                        (update.getMessage().getFrom().getLastName() != null ?
+                        " " + update.getMessage().getFrom().getLastName() : " ");
                 GetUserProfilePhotos getUserProfilePhotos = new GetUserProfilePhotos();
                 getUserProfilePhotos.setUserId(update.getMessage().getFrom().getId());
                 getUserProfilePhotos.setOffset(0);
