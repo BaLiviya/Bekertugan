@@ -1,9 +1,11 @@
 package kz.rbots.bekertugan.telegrambot;
 
 import kz.rbots.bekertugan.broadcaster.Broadcaster;
+import kz.rbots.bekertugan.entities.BotMessage;
 import kz.rbots.bekertugan.entities.Dialog;
 import kz.rbots.bekertugan.front.BotBoardUI;
 import kz.rbots.bekertugan.front.data.mock.DummyDialogData;
+import kz.rbots.bekertugan.front.data.mock.DummyMessagesDataProvicer;
 import kz.rbots.bekertugan.front.event.BotBoardEvent;
 import kz.rbots.bekertugan.front.event.BotBoardEventBus;
 import org.telegram.telegrambots.api.methods.GetFile;
@@ -15,6 +17,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import javax.inject.Singleton;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Singleton
@@ -22,6 +25,12 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
+            DummyMessagesDataProvicer.addMessage(
+                    new BotMessage(
+                            update.getMessage().getFrom().getFirstName(),
+                            update.getMessage().getChatId(),
+                            LocalDateTime.now(),
+                            update.getMessage().getText()));
             Broadcaster.broadcast(update);
             //TODO Сделай тут красиво жи есть х)))))))))))))))
             if (DummyDialogData.getAllDialogs().noneMatch(x -> x.getChatId() == update.getMessage().getFrom().getId())) {

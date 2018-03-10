@@ -6,14 +6,17 @@ import com.vaadin.server.ExternalResource;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.*;
 import kz.rbots.bekertugan.broadcaster.Broadcaster;
+import kz.rbots.bekertugan.entities.BotMessage;
 import kz.rbots.bekertugan.entities.Dialog;
 import kz.rbots.bekertugan.front.data.mock.DummyDialogData;
+import kz.rbots.bekertugan.front.data.mock.DummyMessagesDataProvicer;
 import kz.rbots.bekertugan.telegrambot.TelegramBot;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Update;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.stream.Stream;
 
 public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUpdateListener {
     private VerticalLayout dialogsLayout = new VerticalLayout();
@@ -121,15 +124,33 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
             enterTextLayout.addComponent(backToDialogs,"right: 0px ; top: 0px");
             Broadcaster.register(this);
             this.addComponent(enterTextLayout);
+            addHistoryIfExist(Long.parseLong(chatId));
+        }
+
+        private void addHistoryIfExist(long chatId){
+            Stream<BotMessage> messageStream = DummyMessagesDataProvicer.getAllMessagesFromUser(chatId);
+            if (messageStream!=null){
+               messageStream.limit(29).sorted((o1, o2) ->
+                       o1.getSendsDate().isBefore(o2.getSendsDate()) ?
+                        1 : 0).forEach(
+                                x->postMessage("[" + x.getSendsDate().format(formatter) + "] " + x.getName() + ": " + x.getMessage()));
+            }
+
         }
 
         private void broadCastNewMessage(String chatId){
+            String messageText = textField.getValue();
             Broadcaster.broadcastToBot(
-                    new SendMessage(chatId,textField.getValue()));
+                    new SendMessage(chatId,messageText));
             getUI().access(()->{postMessage("[" +
                     LocalDateTime.now().format(formatter)+
-                    "] Вы: " + textField.getValue());
+                    "] Вы: " + messageText);
             textField.clear();});
+            DummyMessagesDataProvicer.addMessage(new BotMessage(
+                    "Вы",
+                    Long.parseLong(chatId),
+                    LocalDateTime.now(),
+                    messageText));
 
         }
 
