@@ -64,16 +64,20 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
 
     private void addNewDialog(Dialog dialog,String botToken){
         VerticalLayout dialogLayout = new VerticalLayout();
-        ExternalResource externalResource = new ExternalResource("https://api.telegram.org/file/bot"
-        + botToken +"/" + dialog.getAvatarFileId());
+        if (dialog.getAvatarFileId()!=null) {
+            ExternalResource externalResource = new ExternalResource("https://api.telegram.org/file/bot"
+                    + botToken + "/" + dialog.getAvatarFileId());
+            Image image = new Image(dialog.getFirstNameAndLast(),externalResource);
+            image.setHeight("100px");
+            image.setWidth("100px");
+            dialogLayout.addComponent(image);
+        }
         dialogLayout.setId(String.valueOf(dialog.getChatId()));
-        Image image = new Image(dialog.getNameAndLastname(),externalResource);
-        image.setHeight("100px");
-        image.setWidth("100px");
-        Button dialogButton = new Button("@"+dialog.getUserName());
+        String dialogButtonText = dialog.getUserName() != null ? "@" + dialog.getUserName() : dialog.getFirstName();
+        Button dialogButton = new Button(dialogButtonText);
         dialogButton.setId(String.valueOf(dialog.getChatId()));
         dialogButton.addClickListener(this::loginButtonClick);
-        dialogLayout.addComponents(image,dialogButton);
+        dialogLayout.addComponent(dialogButton);
         dialogsLayout.addComponents(dialogLayout);
     }
 
@@ -93,17 +97,24 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
 
 
         private ChatWindow(String chatId) {
+            initEnterTextLayout(chatId);
+            Broadcaster.register(this);
+            this.addComponent(enterTextLayout);
+            addHistoryIfExist(Long.parseLong(chatId));
+        }
+
+        private void initEnterTextLayout(String chatId){
             textField.addShortcutListener(new ShortcutListener("enterListener",ShortcutAction.KeyCode.ENTER,null) {
                 @Override
                 public void handleAction(Object o, Object o1) {
-                broadCastNewMessage(chatId);
+                    broadCastNewMessage(chatId);
                 }
             });
             Dialog dialog = DummyDialogData.getDialogByChatId(Long.parseLong(chatId));
             ExternalResource externalResource = new ExternalResource("https://api.telegram.org/file/bot"
                     + TelegramBot.getToken() +"/"
                     + dialog.getAvatarFileId());
-            avatar = new Image(dialog.getNameAndLastname(),externalResource);
+            avatar = new Image(dialog.getFirstNameAndLast(),externalResource);
             avatar.setWidth("75px");
             avatar.setHeight("75px");
 
@@ -122,9 +133,6 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
             enterTextLayout.addComponent(textField,"left: 80px; top: 25%");
             enterTextLayout.addComponent(sendButton,"left: 80px; bottom: 0px");
             enterTextLayout.addComponent(backToDialogs,"right: 0px ; top: 0px");
-            Broadcaster.register(this);
-            this.addComponent(enterTextLayout);
-            addHistoryIfExist(Long.parseLong(chatId));
         }
 
         private void addHistoryIfExist(long chatId){
