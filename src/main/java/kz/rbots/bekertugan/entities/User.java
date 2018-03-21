@@ -122,7 +122,7 @@ public final class User {
 //    private String username;
 //
 //
-//    private String name;
+//    private String senderName;
 //
 //
 //    private String email;
@@ -223,12 +223,12 @@ public final class User {
 //        this.roles = roles;
 //    }
 //
-//    public String getName() {
-//        return name;
+//    public String getSenderName() {
+//        return senderName;
 //    }
 //
-//    public void setName(String name) {
-//        this.name = name;
+//    public void setSenderName(String senderName) {
+//        this.senderName = senderName;
 //    }
 //
 //    public String getEmail() {

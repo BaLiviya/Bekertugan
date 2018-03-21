@@ -1,5 +1,6 @@
 package kz.rbots.bekertugan.front.view.dialogs;
 
+import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.ExternalResource;
@@ -17,14 +18,18 @@ import org.telegram.telegrambots.api.objects.Update;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Stream;
-
+@PreserveOnRefresh
 public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUpdateListener {
     private VerticalLayout dialogsLayout = new VerticalLayout();
     private boolean listIsEmpty;
     private boolean inChatWindow;
+
+
+
     public DialogsPanel() {
         super();
         DummyDialogData.getAllDialogs().forEach(x->addNewDialog(x, TelegramBot.getToken()));
+//        dialogRepository.findAll().forEach(x->addNewDialog(x, TelegramBot.getToken()));
         this.setSizeFull();
         if (dialogsLayout.getComponentCount()==0){
             Label noDialogs = new Label("Here is no dialogsLayout");
@@ -86,7 +91,7 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
         getUI().access(()->setContent(new ChatWindow(chatId)));
         Broadcaster.unregisterDialogsListener(this);
     }
-
+    @PreserveOnRefresh
     private class ChatWindow extends VerticalLayout implements Broadcaster.BotUpdatesListener {
         private Image avatar;
         private final TextField textField = new TextField("Type text here: ");
@@ -124,7 +129,6 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
                 inChatWindow=false;
                 getUI().access(()->setContent(dialogsLayout));
                 Broadcaster.unregister(this);
-                detach();
             });
             textField.setWidth("90%");
             enterTextLayout.setHeight("120px");
@@ -141,7 +145,7 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
                messageStream.limit(29).sorted((o1, o2) ->
                        o1.getSendsDate().isBefore(o2.getSendsDate()) ?
                         1 : 0).forEach(
-                                x->postMessage("[" + x.getSendsDate().format(formatter) + "] " + x.getName() + ": " + x.getMessage()));
+                                x->postMessage("[" + x.getSendsDate().format(formatter) + "] " + x.getSenderName() + ": " + x.getMessage()));
             }
 
         }

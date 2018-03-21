@@ -5,12 +5,12 @@
 //public class Role implements GrantedAuthority {
 //    private Long id;
 //
-//    private String name;
+//    private String senderName;
 //
 //    private boolean status;
 //
 //    public String getAuthority() {
-//        return getName();
+//        return getSenderName();
 //    }
 //
 //    public Long getId() {
@@ -21,12 +21,12 @@
 //        this.id = id;
 //    }
 //
-//    public String getName() {
-//        return name;
+//    public String getSenderName() {
+//        return senderName;
 //    }
 //
-//    public void setName(String name) {
-//        this.name = name;
+//    public void setSenderName(String senderName) {
+//        this.senderName = senderName;
 //    }
 //
 //    public boolean isStatus() {

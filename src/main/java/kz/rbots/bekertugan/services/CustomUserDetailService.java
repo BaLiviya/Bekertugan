@@ -19,7 +19,7 @@
 //            Role role = new Role();
 //            user.setUsername("user");
 //            user.setPassword("123");
-//            role.setName("ROLE_ADMIN");
+//            role.setSenderName("ROLE_ADMIN");
 //            roles.add(role);
 //            user.setRoles(roles);
 //            return user;

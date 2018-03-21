@@ -131,7 +131,7 @@ public class Analytics extends VerticalLayout implements View {
 //            item.setY(revenue.getRevenue());
 //            movieSeries.add(item);
 //        }
-//        movieSeries.setName(movie.getTitle());
+//        movieSeries.setSenderName(movie.getTitle());
 //        timeline.getConfiguration().addSeries(movieSeries);
 //        timeline.drawChart();
     }

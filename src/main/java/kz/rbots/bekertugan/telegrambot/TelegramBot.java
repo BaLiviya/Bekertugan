@@ -3,8 +3,12 @@ package kz.rbots.bekertugan.telegrambot;
 import kz.rbots.bekertugan.broadcaster.Broadcaster;
 import kz.rbots.bekertugan.entities.BotMessage;
 import kz.rbots.bekertugan.entities.Dialog;
+import kz.rbots.bekertugan.front.data.DialogRepository;
 import kz.rbots.bekertugan.front.data.mock.DummyDialogData;
 import kz.rbots.bekertugan.front.data.mock.DummyMessagesDataProvicer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.api.methods.GetFile;
 import org.telegram.telegrambots.api.methods.GetUserProfilePhotos;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
@@ -13,18 +17,36 @@ import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
 import java.time.LocalDateTime;
 import java.util.List;
-
 @Singleton
+@Component
 public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.TelegramMessageSender {
+    private final DialogRepository dialogRepository;
+    private final kz.rbots.bekertugan.front.data.BotMessagesRepository BotMessagesRepository;
+
+    @Autowired
+    public TelegramBot(DialogRepository dialogRepository, kz.rbots.bekertugan.front.data.BotMessagesRepository botMessagesRepository) {
+        this.dialogRepository = dialogRepository;
+        BotMessagesRepository = botMessagesRepository;
+    }
+
+    @PostConstruct
+    public void initIt() throws Exception {
+        TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
+        telegramBotsApi.registerBot(this);
+        System.out.println("Bot is online");
+        Broadcaster.registerBot(this);
+    }
+
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            saveAllUpdateData(update);
             broadcastAllData(update);
             addAndBroadcastDialogIfNotAdded(update);
+            saveAllUpdateData(update);
         }
     }
 
@@ -59,12 +81,11 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
     }
 
     private void addMessageToHistory(Update update){
-        DummyMessagesDataProvicer.addMessage(
-                new BotMessage(
-                        update.getMessage().getFrom().getFirstName(),
-                        update.getMessage().getChatId(),
-                        LocalDateTime.now(),
-                        update.getMessage().getText()));
+        BotMessagesRepository.save(new BotMessage(
+                update.getMessage().getFrom().getFirstName(),
+                update.getMessage().getChatId(),
+                LocalDateTime.now(),
+                update.getMessage().getText()));
     }
 
 
@@ -99,18 +120,18 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
     }
 
     private void addAndBroadcastDialogIfNotAdded(Update update){
-        if (DummyDialogData.getAllDialogs().noneMatch(x -> x.getChatId() == update.getMessage().getFrom().getId())) {
+        if (!dialogRepository.existsByChatId(update.getMessage().getChatId())) {
             String firstName    = update.getMessage().getFrom().getFirstName();
             String lastName     = update.getMessage().getFrom().getLastName();
             String userName     = update.getMessage().getFrom().getUserName();
             String lastAvatar   = getLastAvatarFileId(update);
-            Dialog dialogToSend = new Dialog(update.getMessage().getChatId(), firstName, lastName, userName);
+            Dialog dialogToSend = new Dialog(update.getMessage().getChatId(), firstName, lastName, userName,null);
 
             if (lastAvatar!=null){
                 String avatarFileId = getFilePathById(lastAvatar);
                 dialogToSend.setAvatarFileId(avatarFileId);
             }
-
+            dialogRepository.save(dialogToSend);
             Broadcaster.newDialog(dialogToSend, getBotToken());
             DummyDialogData.addNewDialog(dialogToSend);
 

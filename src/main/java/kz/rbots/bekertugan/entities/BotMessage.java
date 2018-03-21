@@ -1,16 +1,36 @@
 package kz.rbots.bekertugan.entities;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
+@Setter
 @Getter
+@Entity
 public class BotMessage {
-    private final String name;
-    private final long chatId;
-    private final LocalDateTime sendsDate;
-    private final String message;
+    private  String senderName;
+    @Id
+    private  long chatId;
+    @Column(name = "sends_date")
+    private  LocalDateTime sendsDate;
+    private  String message;
 
+    public BotMessage() {
+    }
+
+    public BotMessage(String senderName, long chatId, LocalDateTime sendsDate, String message) {
+        this.senderName = senderName;
+        this.chatId = chatId;
+        this.sendsDate = sendsDate;
+        this.message = message;
+    }
+
+    @ManyToOne(fetch= FetchType.LAZY)
+    @JoinColumn(name="chatId", insertable = false, updatable = false)
+    private Dialog dialog;
 }
