@@ -159,6 +159,7 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
                     "] Вы: " + messageText);
             textField.clear();});
             DummyMessagesDataProvicer.addMessage(new BotMessage(
+                    0,
                     "Вы",
                     Long.parseLong(chatId),
                     LocalDateTime.now(),

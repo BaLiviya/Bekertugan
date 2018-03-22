@@ -13,8 +13,9 @@ import java.time.LocalDateTime;
 @Getter
 @Entity
 public class BotMessage {
-    private  String senderName;
     @Id
+    private  long messageId;
+    private  String senderName;
     private  long chatId;
     @Column(name = "sends_date")
     private  LocalDateTime sendsDate;
@@ -23,7 +24,8 @@ public class BotMessage {
     public BotMessage() {
     }
 
-    public BotMessage(String senderName, long chatId, LocalDateTime sendsDate, String message) {
+    public BotMessage(long messageId,String senderName, long chatId, LocalDateTime sendsDate, String message) {
+        this.messageId = messageId;
         this.senderName = senderName;
         this.chatId = chatId;
         this.sendsDate = sendsDate;

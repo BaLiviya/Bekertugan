@@ -5,8 +5,10 @@ import kz.rbots.bekertugan.entities.BotMessage;
 import kz.rbots.bekertugan.entities.Dialog;
 import kz.rbots.bekertugan.front.data.DialogRepository;
 import kz.rbots.bekertugan.front.data.mock.DummyDialogData;
-import kz.rbots.bekertugan.front.data.mock.DummyMessagesDataProvicer;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.api.methods.GetFile;
@@ -23,9 +25,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 @Singleton
 @Component
+@Setter
+@Getter
 public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.TelegramMessageSender {
     private final DialogRepository dialogRepository;
     private final kz.rbots.bekertugan.front.data.BotMessagesRepository BotMessagesRepository;
+
+    @Value("${telegram-bot-username}")
+    private String botUsername;
+
+    @Value("${telegram-bot-token}")
+    private String botToken;
 
     @Autowired
     public TelegramBot(DialogRepository dialogRepository, kz.rbots.bekertugan.front.data.BotMessagesRepository botMessagesRepository) {
@@ -52,12 +62,12 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
 
     @Override
     public String getBotUsername() {
-        return "";
+        return botUsername;
     }
 
     @Override
     public String getBotToken() {
-        return "";
+        return botToken;
     }
     // TODO Тут тож красиво сделай)))
     public static String getToken() {
@@ -82,6 +92,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
 
     private void addMessageToHistory(Update update){
         BotMessagesRepository.save(new BotMessage(
+                update.getMessage().getMessageId(),
                 update.getMessage().getFrom().getFirstName(),
                 update.getMessage().getChatId(),
                 LocalDateTime.now(),
