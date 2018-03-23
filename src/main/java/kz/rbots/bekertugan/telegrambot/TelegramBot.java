@@ -14,6 +14,7 @@ import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.api.methods.GetFile;
 import org.telegram.telegrambots.api.methods.GetUserProfilePhotos;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.PhotoSize;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -74,14 +75,27 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
          return "";
     }
 
+
     @Override
     public void receiveBroadcast(SendMessage sendMessage) {
         try {
-            this.execute(sendMessage);
+            Message m = this.execute(sendMessage);
+            saveSendMessageToRep(m);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
     }
+
+    private void saveSendMessageToRep(Message m){
+        BotMessage bm = new BotMessage(
+                m.getMessageId(),
+                m.getFrom().getFirstName(),
+                m.getChatId(),
+                LocalDateTime.now(),
+                m.getText());
+        BotMessagesRepository.save(bm);
+    }
+
     private void saveAllUpdateData(Update update){
         addMessageToHistory(update);
     }
