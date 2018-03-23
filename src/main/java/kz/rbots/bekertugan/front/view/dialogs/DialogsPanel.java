@@ -6,6 +6,7 @@ import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.*;
+import com.vaadin.ui.themes.ValoTheme;
 import kz.rbots.bekertugan.broadcaster.Broadcaster;
 import kz.rbots.bekertugan.entities.BotMessage;
 import kz.rbots.bekertugan.entities.Dialog;
@@ -13,15 +14,13 @@ import kz.rbots.bekertugan.front.data.BotMessagesRepository;
 import kz.rbots.bekertugan.front.data.DialogRepository;
 import kz.rbots.bekertugan.front.data.RepositoryProvider;
 import kz.rbots.bekertugan.telegrambot.TelegramBot;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Update;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,16 +47,12 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
         Broadcaster.registerDialogListener(this);
     }
 
+
     @Override
-    public Registration addComponentDetachListener(ComponentDetachListener listener) {
-      return (Registration) this::onDetach;
-    }
-
-    private void onDetach(){
+    public void detach() {
         Broadcaster.unregisterDialogsListener(this);
-        System.out.println("mda");
+        super.detach();
     }
-
 
     @Override
     public void receiveBroadcast(Dialog dialog, String botToken) {
@@ -100,7 +95,7 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
     }
 
     @PreserveOnRefresh
-    private class ChatWindow extends VerticalLayout implements Broadcaster.BotUpdatesListener {
+    private class ChatWindow extends AbsoluteLayout implements Broadcaster.BotUpdatesListener {
         private Image avatar;
         private final TextField textField = new TextField("Type text here: ");
         private Button sendButton = new Button("Send Message");
@@ -109,24 +104,36 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
         private AbsoluteLayout enterTextLayout = new AbsoluteLayout();
         private DialogRepository dialogRepository = RepositoryProvider.getDialogRepository();
         private BotMessagesRepository botMessagesRepository = RepositoryProvider.getBotMessagesRepository();
-        private int MESSAGES_PER_PAGE = 17;
+        private Panel messagesPanel = new Panel();
+        private VerticalLayout messagesLayout = new VerticalLayout();
+        private final int MESSAGES_PER_PAGE = 17;
+        private Long lastMessageId;
+        private Button showMore;
+        private String chatId;
+        private boolean unlimitedMessagesPerPageAllowed;
 
         private ChatWindow(String chatId) {
+            this.chatId = chatId;
             initEnterTextLayout(chatId);
             Broadcaster.register(this);
-            this.addComponent(enterTextLayout);
+            messagesPanel.setContent(messagesLayout);
+            messagesPanel.setWidth("100%");
+            messagesPanel.setHeight("80%");
+            this.addComponent(messagesPanel);
             addHistoryIfExist(Long.parseLong(chatId));
+            this.addComponent(enterTextLayout,"bottom: 0 px");
         }
 
         private void initEnterTextLayout(String chatId){
+
             textField.addShortcutListener(new ShortcutListener("enterListener",ShortcutAction.KeyCode.ENTER,null) {
                 @Override
                 public void handleAction(Object o, Object o1) {
                     broadCastNewMessage(chatId);
                 }
             });
+
             Dialog dialog = dialogRepository.findOne(Long.valueOf(chatId));
-//                    DummyDialogData.getDialogByChatId(Long.parseLong(chatId));
             ExternalResource externalResource = new ExternalResource("https://api.telegram.org/file/bot"
                     + TelegramBot.getToken() +"/"
                     + dialog.getAvatarFileId());
@@ -141,27 +148,47 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
                 getUI().access(()->setContent(dialogsLayout));
                 Broadcaster.unregister(this);
             });
-            textField.setWidth("90%");
-            enterTextLayout.setHeight("120px");
+
+            textField.setWidth("80%");
+            textField.setHeight("70%");
+            enterTextLayout.setHeight("150px");
             enterTextLayout.setWidth("100%");
             enterTextLayout.addComponent(avatar,"top: 15%");
-            enterTextLayout.addComponent(textField,"left: 80px; top: 25%");
-            enterTextLayout.addComponent(sendButton,"left: 80px; bottom: 0px");
+            enterTextLayout.addComponent(textField,"left: 130px; bottom: 10px");
+            enterTextLayout.addComponent(sendButton,"left: 130px; bottom: 0px");
             enterTextLayout.addComponent(backToDialogs,"right: 0px ; top: 0px");
         }
 
         void addHistoryIfExist(long chatId){
             List<BotMessage> botMessages;
 
-            try (Stream<BotMessage> messageStream = botMessagesRepository.findAllByChatId(chatId).stream()) {
+            try (Stream<BotMessage> messageStream = botMessagesRepository.findTop17ByChatIdOrderByMessageIdDesc(chatId).stream()) {
                 botMessages = messageStream.collect(Collectors.toList());
                 if (!botMessages.isEmpty()){
-                    botMessages.stream().limit(MESSAGES_PER_PAGE-1).sorted((o1, o2) ->
-                            o1.getSendsDate().isBefore(o2.getSendsDate()) ?
-                                    1 : 0).forEach(
-                            x->postMessage("[" + x.getSendsDate().format(formatter) + "] " + x.getSenderName() + ": " + x.getMessage()));
+                    botMessages.sort((Comparator.comparingLong(BotMessage::getMessageId)));
+                    botMessages.forEach(
+                                    x->initMessage(getDialogMessageString(
+                                    x.getSenderName(),
+                                    x.getSendsDate(),
+                                    x.getMessage())));
+                    lastMessageId = botMessages.get(0).getMessageId();
+                    if (botMessages.size()>=MESSAGES_PER_PAGE){
+                        addShowMoreButtonToPanel();
+                    }
+
                 }
             }
+        }
+
+        private void addShowMoreButtonToPanel(){
+            showMore = new Button("Show More");
+            showMore.addStyleName(ValoTheme.BUTTON_BORDERLESS);
+            showMore.addClickListener((Button.ClickEvent e)->
+            {
+                getUI().access(this::loadMoreMessages);
+                unlimitedMessagesPerPageAllowed = true;
+            });
+            messagesLayout.addComponent(showMore,0);
         }
 
         private void broadCastNewMessage(String chatId){
@@ -170,31 +197,69 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
             Broadcaster.broadcastToBot(
                     new SendMessage(chatId,messageText));
             //TODO Сделать отображение имени бота при отправлении - правильным
-            getUI().access(()->{postMessage("[" +
-                    LocalDateTime.now().format(formatter)+
-                    "] Бот: " + messageText);
+            getUI().access(()->{postMessage(getDialogMessageString(
+                    "Бот",
+                    LocalDateTime.now(),
+                    messageText
+                    ));
             textField.clear();});
         }
 
         @Override
         public void receiveBroadcast(Update update) {
-
-            getUI().access(() -> postMessage("["+LocalDateTime.now().format(formatter)+ "] " +update.getMessage().getFrom().getFirstName() + ": "
-                    + update.getMessage().getText()));
+            lastMessageId = Long.valueOf(update.getMessage().getMessageId());
+            getUI().access(() -> postMessage(
+                    getDialogMessageString(
+                            update.getMessage().getFrom().getFirstName(),
+                            LocalDateTime.now(),
+                            update.getMessage().getText())));
 
         }
 
         private void postMessage(String s) {
-        if (this.getComponentCount() > MESSAGES_PER_PAGE) {
-            this.removeComponent(this.getComponent(1));
-        }
-        HorizontalLayout newLine = new HorizontalLayout();
-        newLine.addComponent(new Label(s));
-        this.addComponent(newLine);
-
-
+            if (!unlimitedMessagesPerPageAllowed) {
+                if (messagesLayout.getComponentCount() >= MESSAGES_PER_PAGE) {
+                    if (showMore != null) {
+                        messagesLayout.removeComponent(messagesLayout.getComponent(1));
+                    } else {
+                        addShowMoreButtonToPanel();
+                        messagesLayout.removeComponent(messagesLayout.getComponent(0));
+                    }
+                }
+            }
+        messagesLayout.addComponent(new Label(s));
+            //Какой то ебучий костыль чтобы матать вниз
+            messagesPanel.setScrollTop(1000000);
     }
 
+        private void initMessage(String s) {
+        if (messagesLayout.getComponentCount() >= MESSAGES_PER_PAGE) {
+           messagesLayout.removeComponent(messagesLayout.getComponent(1));
+        }
+
+            messagesLayout.addComponent(new Label(s));
+
+        }
+
+        private void loadMoreMessages() {
+            List<BotMessage> botMessages = botMessagesRepository.findFirst20ByChatIdAndMessageIdBeforeOrderByMessageIdDesc(Long.valueOf(chatId),lastMessageId);
+//                    .findFirst20ByChatIdAndSendsDateBeforeOrderBySendsDateDesc(chatID,lastMessageTime);
+            botMessages.forEach(x->{
+                lastMessageId = x.getMessageId();
+                messagesLayout.addComponent(new Label(getDialogMessageString(
+                        x.getSenderName(),
+                        x.getSendsDate(),
+                        x.getMessage())),1);
+            });
+            if (botMessages.isEmpty()) messagesLayout.removeComponent(showMore);
+        }
+
+        private String getDialogMessageString(String from, LocalDateTime when , String message){
+            //На самом деле идея пиздит, и со стрингой оно будет работать дольше
+            StringBuilder sb = new StringBuilder();
+            sb.append("[").append(when.format(formatter)).append("] ").append(from).append(": ").append(message);
+            return sb.toString();
+        }
 
     }
 }
