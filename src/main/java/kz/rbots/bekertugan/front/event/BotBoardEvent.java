@@ -65,6 +65,11 @@ public class BotBoardEvent {
             return transactions;
         }
     }
+
+    public static class BackToDialogsFromChatEvent {
+
+    }
+
     public static class ProfileUpdatedEvent {
     }
 

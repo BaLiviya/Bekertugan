@@ -75,6 +75,9 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
          return "";
     }
 
+    public static String getBotName(){
+        return "";
+    }
 
     @Override
     public void receiveBroadcast(SendMessage sendMessage) {
@@ -129,9 +132,13 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
 
     private String getLastAvatarFileId(Update update){
         List<List<PhotoSize>> avatars = getAvatars(update);
-        if (avatars == null) return null;
-        List<PhotoSize> lastAvatar = avatars.get(0);
-        return lastAvatar.get(lastAvatar.size()-1).getFileId();
+        if (avatars!=null) {
+            if (avatars.isEmpty()) return null;
+            List<PhotoSize> lastAvatar = avatars.get(0);
+            return lastAvatar.get(lastAvatar.size() - 1).getFileId();
+        } else {
+            return null;
+        }
     }
 
     private String getFilePathById(String fileId) {

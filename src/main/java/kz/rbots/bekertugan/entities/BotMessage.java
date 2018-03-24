@@ -31,6 +31,12 @@ public class BotMessage {
         this.message = message;
     }
 
+    public BotMessage(String senderName, LocalDateTime sendsDate, String message) {
+        this.senderName = senderName;
+        this.sendsDate = sendsDate;
+        this.message = message;
+    }
+
     @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name="chatId", insertable = false, updatable = false)
     private Dialog dialog;
