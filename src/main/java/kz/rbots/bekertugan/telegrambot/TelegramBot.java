@@ -5,6 +5,7 @@ import kz.rbots.bekertugan.entities.BotMessage;
 import kz.rbots.bekertugan.entities.Dialog;
 import kz.rbots.bekertugan.front.data.DialogRepository;
 import kz.rbots.bekertugan.front.data.mock.DummyDialogData;
+import kz.rbots.bekertugan.telegrambot.utils.TelegramBotExecutorUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,6 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
     private final kz.rbots.bekertugan.front.data.BotMessagesRepository BotMessagesRepository;
 
     private static String crutchBotUsername;
-    private static String crutchBotToken;
 
     @Value("${telegram-bot-username}")
     private String botUsername;
@@ -53,7 +53,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
         telegramBotsApi.registerBot(this);
         System.out.println("Bot is online");
         Broadcaster.registerBot(this);
-        crutchBotToken = botToken;
+        TelegramBotExecutorUtil.setTelegramBot(this);
         crutchBotUsername = botUsername;
     }
 
@@ -74,10 +74,6 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
     @Override
     public String getBotToken() {
         return botToken;
-    }
-    // TODO Тут тож красиво сделай)))
-    public static String getToken() {
-         return crutchBotToken;
     }
 
     public static String getBotName(){
@@ -123,9 +119,9 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
 
 
 
-    private List<List<PhotoSize>> getAvatars(Update update){
+    private List<List<PhotoSize>> getAvatars(Integer userId){
         GetUserProfilePhotos getUserProfilePhotos = new GetUserProfilePhotos();
-        getUserProfilePhotos.setUserId(update.getMessage().getFrom().getId());
+        getUserProfilePhotos.setUserId(userId);
         getUserProfilePhotos.setOffset(0);
         List<List<PhotoSize>> photoSizes = null;
         try {
@@ -135,8 +131,8 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
         return photoSizes;
     }
 
-    private String getLastAvatarFileId(Update update){
-        List<List<PhotoSize>> avatars = getAvatars(update);
+    public String getLastAvatarFileId(Integer userId){
+        List<List<PhotoSize>> avatars = getAvatars(userId);
         if (avatars!=null) {
             if (avatars.isEmpty()) return null;
             List<PhotoSize> lastAvatar = avatars.get(0);
@@ -146,7 +142,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
         }
     }
 
-    private String getFilePathById(String fileId) {
+    public String getFilePathById(String fileId) {
         GetFile getFile = new GetFile();
         getFile.setFileId(fileId);
         try {
@@ -161,7 +157,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
             String firstName    = update.getMessage().getFrom().getFirstName();
             String lastName     = update.getMessage().getFrom().getLastName();
             String userName     = update.getMessage().getFrom().getUserName();
-            String lastAvatar   = getLastAvatarFileId(update);
+            String lastAvatar   = getLastAvatarFileId(update.getMessage().getFrom().getId());
             Dialog dialogToSend = new Dialog(update.getMessage().getChatId(), firstName, lastName, userName,null);
 
             if (lastAvatar!=null){
@@ -169,7 +165,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
                 dialogToSend.setAvatarFileId(avatarFileId);
             }
             dialogRepository.save(dialogToSend);
-            Broadcaster.newDialog(dialogToSend, getBotToken());
+            Broadcaster.newDialog(dialogToSend);
             DummyDialogData.addNewDialog(dialogToSend);
 
             }

@@ -10,7 +10,8 @@ import kz.rbots.bekertugan.front.data.DialogRepository;
 import kz.rbots.bekertugan.front.data.RepositoryProvider;
 import kz.rbots.bekertugan.front.event.BotBoardEvent;
 import kz.rbots.bekertugan.front.event.BotBoardEventBus;
-import kz.rbots.bekertugan.telegrambot.TelegramBot;
+import kz.rbots.bekertugan.telegrambot.utils.TelegramBotExecutorUtil;
+
 @PreserveOnRefresh
 public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUpdateListener {
     private AbsoluteLayout dialogsLayout = new AbsoluteLayout();
@@ -23,7 +24,7 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
         super();
         BotBoardEventBus.register(this);
         DialogRepository dialogRepository = RepositoryProvider.getDialogRepository();
-        dialogRepository.findAll().forEach(x->addNewDialog(x, TelegramBot.getToken()));
+        dialogRepository.findAll().forEach(this::addNewDialog);
         this.setSizeFull();
         if (dialogsLayout.getComponentCount()==0){
             Label noDialogs = new Label("Here is no dialogsLayout");
@@ -50,23 +51,25 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
     }
 
     @Override
-    public void receiveBroadcast(Dialog dialog, String botToken) {
+    public void receiveBroadcast(Dialog dialog) {
             System.out.println("HaveBroadcast");
             if (listIsEmpty) {
                 listIsEmpty = false;
-                addNewDialog(dialog, botToken);
+                addNewDialog(dialog);
                 setContent(dialogsLayout);
             } else {
-                addNewDialog(dialog, botToken);
+                addNewDialog(dialog);
             }
             getUI().access(() -> dialogsLayout.addComponent(new Label()));
     }
 
-    private void addNewDialog(Dialog dialog,String botToken){
+    private void addNewDialog(Dialog dialog){
         VerticalLayout dialogLayout = new VerticalLayout();
         if (dialog.getAvatarFileId()!=null) {
-            dialogLayout.addComponent(getAvatarViaURL("https://api.telegram.org/file/bot"
-                    + botToken + "/" + dialog.getAvatarFileId()));
+            dialogLayout.addComponent(
+                    getAvatarViaURL(
+                    TelegramBotExecutorUtil.getActualURLForAvatar(Math.toIntExact(dialog.getChatId())
+                    )));
         } else {
             dialogLayout.addComponent(getAvatarViaURL("https://pickaface.net/assets/images/not-found.jpg"));
         }
@@ -87,7 +90,7 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
         getUI().access(()->setContent(new ChatWindow(chatId)));
         Broadcaster.unregisterDialogsListener(this);
     }
-    //Bot token is temp
+
     private Image getAvatarViaURL(String imageUrl){
         ExternalResource externalResource = new ExternalResource(imageUrl);
         Image image = new Image();

@@ -16,6 +16,7 @@ import kz.rbots.bekertugan.front.data.RepositoryProvider;
 import kz.rbots.bekertugan.front.event.BotBoardEvent;
 import kz.rbots.bekertugan.front.event.BotBoardEventBus;
 import kz.rbots.bekertugan.telegrambot.TelegramBot;
+import kz.rbots.bekertugan.telegrambot.utils.TelegramBotExecutorUtil;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Update;
 
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,9 +69,9 @@ class ChatWindow extends AbsoluteLayout implements Broadcaster.BotUpdatesListene
         Dialog dialog = dialogRepository.findOne(Long.valueOf(chatId));
         Image avatar = new Image(dialog.getFirstNameAndLast());
         if (dialog.getAvatarFileId()!=null) {
-           avatar.setSource(new ExternalResource("https://api.telegram.org/file/bot"
-                    + TelegramBot.getToken() + "/"
-                    + dialog.getAvatarFileId()));
+            //noinspection ConstantConditions
+            avatar.setSource(new ExternalResource(TelegramBotExecutorUtil.getActualURLForAvatar
+                   (Integer.valueOf(chatId))));
 
         } else {
             avatar.setSource(new ExternalResource("https://pickaface.net/assets/images/not-found.jpg"));

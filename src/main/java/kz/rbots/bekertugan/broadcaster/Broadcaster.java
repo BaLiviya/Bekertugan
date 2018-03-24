@@ -24,7 +24,7 @@ public class Broadcaster implements Serializable {
     }
 
     public interface TelegramDialogsUpdateListener {
-        void receiveBroadcast(Dialog dialog, String botToken);
+        void receiveBroadcast(Dialog dialog);
     }
 
     private static LinkedList<BotUpdatesListener> botListeners = new LinkedList<>();
@@ -47,9 +47,9 @@ public class Broadcaster implements Serializable {
     }
 
     public static synchronized void newDialog(
-            final Dialog dialog,String token) {
+            final Dialog dialog) {
         for (final TelegramDialogsUpdateListener listener: dialogsListeners)
-            executorService.execute(() -> listener.receiveBroadcast(dialog,token));
+            executorService.execute(() -> listener.receiveBroadcast(dialog));
     }
 
     public static synchronized void broadcast(
