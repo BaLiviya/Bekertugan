@@ -32,6 +32,9 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
     private final DialogRepository dialogRepository;
     private final kz.rbots.bekertugan.front.data.BotMessagesRepository BotMessagesRepository;
 
+    private static String crutchBotUsername;
+    private static String crutchBotToken;
+
     @Value("${telegram-bot-username}")
     private String botUsername;
 
@@ -50,6 +53,8 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
         telegramBotsApi.registerBot(this);
         System.out.println("Bot is online");
         Broadcaster.registerBot(this);
+        crutchBotToken = botToken;
+        crutchBotUsername = botUsername;
     }
 
     @Override
@@ -72,11 +77,11 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
     }
     // TODO Тут тож красиво сделай)))
     public static String getToken() {
-         return "";
+         return crutchBotToken;
     }
 
     public static String getBotName(){
-        return "";
+        return crutchBotUsername;
     }
 
     @Override

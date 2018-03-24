@@ -64,14 +64,18 @@ class ChatWindow extends AbsoluteLayout implements Broadcaster.BotUpdatesListene
                 broadCastNewMessage(chatId);
             }
         });
-
         Dialog dialog = dialogRepository.findOne(Long.valueOf(chatId));
-        ExternalResource externalResource = new ExternalResource("https://api.telegram.org/file/bot"
-                + TelegramBot.getToken() +"/"
-                + dialog.getAvatarFileId());
-        Image avatar = new Image(dialog.getFirstNameAndLast(), externalResource);
-        avatar.setWidth("75px");
-        avatar.setHeight("75px");
+        Image avatar = new Image(dialog.getFirstNameAndLast());
+        if (dialog.getAvatarFileId()!=null) {
+           avatar.setSource(new ExternalResource("https://api.telegram.org/file/bot"
+                    + TelegramBot.getToken() + "/"
+                    + dialog.getAvatarFileId()));
+
+        } else {
+            avatar.setSource(new ExternalResource("https://pickaface.net/assets/images/not-found.jpg"));
+        }
+        avatar.setWidth("110px");
+        avatar.setHeight("110px");
 
         sendButton.addClickListener(e-> getUI().access(()->broadCastNewMessage(chatId)));
 
@@ -84,9 +88,9 @@ class ChatWindow extends AbsoluteLayout implements Broadcaster.BotUpdatesListene
         textField.setHeight("70%");
         enterTextLayout.setHeight("150px");
         enterTextLayout.setWidth("100%");
-        enterTextLayout.addComponent(avatar,"top: 15%");
+        enterTextLayout.addComponent(avatar,"top: 15%; left: 1%");
         enterTextLayout.addComponent(textField,"left: 130px; bottom: 10px");
-        enterTextLayout.addComponent(sendButton,"left: 130px; bottom: 0px");
+        enterTextLayout.addComponent(sendButton,"left: 130px; bottom: 5%");
         enterTextLayout.addComponent(backToDialogs,"right: 0px ; top: 0px");
     }
 
