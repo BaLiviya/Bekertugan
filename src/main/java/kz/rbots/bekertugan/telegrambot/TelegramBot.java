@@ -60,8 +60,8 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            broadcastAllData(update);
             addAndBroadcastDialogIfNotAdded(update);
+            broadcastAllData(update);
             saveAllUpdateData(update);
         }
     }
