@@ -24,7 +24,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,9 +43,11 @@ class ChatWindow extends AbsoluteLayout implements Broadcaster.BotUpdatesListene
     private Button showMore;
     private String chatId;
     private boolean unlimitedMessagesPerPageAllowed;
+    private Image avatar;
 
-     ChatWindow(String chatId) {
+     ChatWindow(String chatId, Image avatar) {
         this.chatId = chatId;
+        this.avatar = avatar;
         initEnterTextLayout(chatId);
         Broadcaster.register(this);
         messagesPanel.setContent(messagesLayout);
@@ -67,17 +68,7 @@ class ChatWindow extends AbsoluteLayout implements Broadcaster.BotUpdatesListene
             }
         });
         Dialog dialog = dialogRepository.findOne(Long.valueOf(chatId));
-        Image avatar = new Image(dialog.getFirstNameAndLast());
-        if (dialog.getAvatarFileId()!=null) {
-            //noinspection ConstantConditions
-            avatar.setSource(new ExternalResource(TelegramBotExecutorUtil.getActualURLForAvatar
-                   (Integer.valueOf(chatId))));
-
-        } else {
-            avatar.setSource(new ExternalResource("https://pickaface.net/assets/images/not-found.jpg"));
-        }
-        avatar.setWidth("110px");
-        avatar.setHeight("110px");
+        initAvatar(dialog);
 
         sendButton.addClickListener(e-> getUI().access(()->broadCastNewMessage(chatId)));
 
@@ -94,6 +85,20 @@ class ChatWindow extends AbsoluteLayout implements Broadcaster.BotUpdatesListene
         enterTextLayout.addComponent(textField,"left: 130px; bottom: 10px");
         enterTextLayout.addComponent(sendButton,"left: 130px; bottom: 5%");
         enterTextLayout.addComponent(backToDialogs,"right: 0px ; top: 0px");
+    }
+
+    private void initAvatar(Dialog dialog){
+        if (avatar!=null) {
+            //noinspection ConstantConditions
+            avatar.setSource(new ExternalResource(TelegramBotExecutorUtil.getActualURLForAvatar
+                    (Integer.valueOf(chatId))));
+
+        } else {
+            avatar = new Image(dialog.getFirstNameAndLast());
+            avatar.setSource(new ExternalResource("https://pickaface.net/assets/images/not-found.jpg"));
+        }
+        avatar.setWidth("110px");
+        avatar.setHeight("110px");
     }
 
     private void addHistoryIfExist(long chatId){
