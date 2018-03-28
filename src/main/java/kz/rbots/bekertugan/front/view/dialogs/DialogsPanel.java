@@ -5,6 +5,7 @@ import com.google.common.eventbus.Subscribe;
 import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.ui.*;
+import com.vaadin.ui.themes.ValoTheme;
 import kz.rbots.bekertugan.broadcaster.Broadcaster;
 import kz.rbots.bekertugan.entities.Dialog;
 import kz.rbots.bekertugan.front.data.DialogRepository;
@@ -17,14 +18,19 @@ import org.telegram.telegrambots.api.objects.Update;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.stream.Collectors;
 
 @PreserveOnRefresh
 public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUpdateListener, Broadcaster.BotUpdatesListener {
-    private AbsoluteLayout dialogsLayout = new AbsoluteLayout();
-    private int xOffset;
-    private int yOffSet;
-    private final int DIALOGS_PER_ROW = 7;
-    private int lastDialogNumberInROw;
+    private AbsoluteLayout fatherOfTheWorld = new AbsoluteLayout();
+    private Panel content = new Panel();
+    private int rowsInLayout = 3;
+    private GridLayout dialogsLayout = new GridLayout(5,rowsInLayout);
+    private DialogRepository dialogRepository = RepositoryProvider.getDialogRepository();
+    private final int DIALOGS_PER_PAGE = 15;
+    private boolean allowedUnlimitedDialogsPerPage;
+    private int offset;
+    private Button showMore;
     private ConcurrentHashMap<Long, Image> avatars;
     private ConcurrentLinkedDeque<VerticalLayout> dialogList;
 
@@ -32,6 +38,9 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
 
     public DialogsPanel() {
         super();
+        fatherOfTheWorld.setSizeFull();
+        setContent(fatherOfTheWorld);
+        content.setSizeFull();
         dialogList = new ConcurrentLinkedDeque<>();
         avatars = new ConcurrentHashMap<>();
         BotBoardEventBus.register(this);
@@ -43,19 +52,28 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
     @SuppressWarnings("unused")
     @Subscribe
     public void comeBackFromChatWindow(final BotBoardEvent.BackToDialogsFromChatEvent e){
-        getUI().access(()->setContent(dialogsLayout));
+        getUI().access(()->setContent(fatherOfTheWorld));
     }
 
     private void initDialogs(){
-        DialogRepository dialogRepository = RepositoryProvider.getDialogRepository();
-        List<Dialog>dialogs = Lists.newArrayList(dialogRepository.findAllByOrderMessageISNewer());
+        List<Dialog>dialogs = Lists.newArrayList(dialogRepository.findSomeFirstByOrderMessageISNewer(DIALOGS_PER_PAGE));
         this.setSizeFull();
         if (dialogs.isEmpty()){
             Label noDialogs = new Label("Here is no dialogs");
-            setContent(noDialogs);
+            content.setContent(noDialogs);
         } else {
             dialogs.forEach(x->addDialogToTail(getDialogLayOut(x)));
-            setContent(dialogsLayout);
+            content.setContent(dialogsLayout);
+            fatherOfTheWorld.addComponent(content);
+            if (dialogs.size()>=DIALOGS_PER_PAGE){
+                showMore = new Button("Show More");
+                showMore.setStyleName(ValoTheme.BUTTON_BORDERLESS_COLORED);
+                showMore.addClickListener((event)->{
+                   allowedUnlimitedDialogsPerPage = true;
+                   loadMoreDialogs();
+                });
+                fatherOfTheWorld.addComponent(showMore,"bottom: 0px; left: 40%; right: 25%");
+            }
         }
     }
 
@@ -70,11 +88,16 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
 
     @Override
     public void receiveBroadcast(Dialog dialog) {
-            addDialogToHead(getDialogLayOut(dialog));
-            getUI().access(() -> setContent(dialogsLayout));
+        try {
+            getUI().access(() -> addDialogToHead(getDialogLayOut(dialog)));
+            //I don't know why, but i think its because spring creates more than one servlet
+            //This exception come every access when i tried update dialog list
+        } catch (com.vaadin.ui.UIDetachedException ignored)
+        {}
     }
 
     private void addDialogToTail(VerticalLayout dialog){
+        if (!allowedUnlimitedDialogsPerPage && dialogList.size()>=DIALOGS_PER_PAGE) return;
         addDialogLayoutToDialogsLayout(dialog);
         dialogList.addLast(dialog);
     }
@@ -84,10 +107,9 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
             dialogList.remove(dialog);
         }
         dialogList.addFirst(dialog);
+        //Check are allowed unlimited dialogs per pager or not, if not we should kill the last
+        if (!allowedUnlimitedDialogsPerPage && dialogList.size()>DIALOGS_PER_PAGE) dialogList.removeLast();
         dialogsLayout.removeAllComponents();
-        lastDialogNumberInROw = 0;
-        xOffset = 0;
-        yOffSet = 0;
         dialogList.forEach(this::addDialogLayoutToDialogsLayout);
     }
 
@@ -115,14 +137,7 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
     }
 
     private void addDialogLayoutToDialogsLayout(VerticalLayout dialogLayout){
-        if (lastDialogNumberInROw == DIALOGS_PER_ROW) {
-            lastDialogNumberInROw = 0;
-            yOffSet = yOffSet + 250;
-            xOffset = 0;
-        }
-        lastDialogNumberInROw++;
-        dialogsLayout.addComponent(dialogLayout, "left:" + xOffset + "px;" + "top:" + yOffSet + "px");
-        xOffset = xOffset + 130;
+        dialogsLayout.addComponent(dialogLayout);
     }
 
     private void loginButtonClick(Button.ClickEvent e) {
@@ -137,8 +152,8 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
         ExternalResource externalResource = new ExternalResource(imageUrl);
         Image image = new Image();
         image.setSource(externalResource);
-        image.setHeight("120px");
-        image.setWidth("120px");
+        image.setHeight("125px");
+        image.setWidth("125px");
         return image;
     }
 
@@ -146,13 +161,26 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
     public void receiveBroadcast(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
 
-        //Check if dialog already in head in case of another broadcast (dialogs broadcast)
+        //Check if dialog already in head in case of another broadcast (new dialogs broadcast)
         if (!dialogList.getFirst().getId().equals(chatId)) {
-            //noinspection ConstantConditions
-            VerticalLayout updatedDialog = dialogList.stream().filter(x -> x.getId().equals(chatId)).findFirst().get();
+            VerticalLayout updatedDialog = dialogList.stream().filter(
+                    x -> x.getId().equals(chatId)).findFirst()
+                    .orElse(getDialogLayOut(dialogRepository.findOne(Long.valueOf(chatId))));
             addDialogToHead(updatedDialog);
-            getUI().access(()->setContent(dialogsLayout));
+            getUI().access(()->setContent(fatherOfTheWorld));
         }
 
+    }
+
+    private void loadMoreDialogs(){
+        rowsInLayout = rowsInLayout + 3;
+        dialogsLayout.setRows(rowsInLayout);
+        offset = offset + DIALOGS_PER_PAGE;
+        List<VerticalLayout> dialogsFromDB = Lists.newArrayList(dialogRepository.findAllByOffset(DIALOGS_PER_PAGE, offset))
+                .stream().map(this::getDialogLayOut).collect(Collectors.toList());
+        if (dialogsFromDB.isEmpty()){
+            fatherOfTheWorld.removeComponent(showMore);
+        }
+        dialogsFromDB.forEach(this::addDialogToTail);
     }
 }

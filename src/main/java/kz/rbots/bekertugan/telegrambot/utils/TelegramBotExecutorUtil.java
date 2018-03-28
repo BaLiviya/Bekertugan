@@ -2,6 +2,9 @@ package kz.rbots.bekertugan.telegrambot.utils;
 
 import kz.rbots.bekertugan.telegrambot.TelegramBot;
 import lombok.Setter;
+import org.telegram.telegrambots.api.methods.GetFile;
+import org.telegram.telegrambots.exceptions.TelegramApiException;
+
 import java.util.concurrent.*;
 
 public class TelegramBotExecutorUtil {
@@ -22,6 +25,23 @@ public class TelegramBotExecutorUtil {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static String getFilePathById(String fileId) {
+       final Future<String> path = pool.submit(() -> telegramBot.getFilePathById(fileId));
+
+        try {
+            return path.get();
+        } catch (InterruptedException | ExecutionException ignored) {
+            return null;
+        }
+//        GetFile getFile = new GetFile();
+//        getFile.setFileId(fileId);
+//        try {
+//            return telegramBot.execute(getFile).getFilePath();
+//        } catch (TelegramApiException ignored) {
+//            return null;
+//        }
     }
 
 

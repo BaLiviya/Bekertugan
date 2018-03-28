@@ -13,7 +13,7 @@ import kz.rbots.bekertugan.front.view.dialogs.DialogsPanel;
 public final class DashboardView extends Panel implements View,
         DashboardEdit.DashboardEditListener {
 
-    public static final String TITLE_ID = "dashboard-title";
+    private static final String TITLE_ID = "dashboard-title";
 
     private Label titleLabel;
     private CssLayout dashboardPanels;
@@ -98,16 +98,8 @@ public final class DashboardView extends Panel implements View,
     }
 
     private Component buildDialog() {
-//        TopGrossingMoviesChart topGrossingMoviesChart = new TopGrossingMoviesChart();
-//        topGrossingMoviesChart.setSizeFull();
-//        return createContentWrapper(topGrossingMoviesChart);
-//        chat = createContentWrapper(new Label("Syka"));
-//        chat = new VerticalLayout(new Label("suka"));
-//        return chat;
-//        return createContentWrapper(new Label("syka"));
         DialogsPanel dialogsPanel = new DialogsPanel();
-        dialogsPanel.setWidth("100%");
-        dialogsPanel.setHeight("100%");
+        dialogsPanel.setSizeFull();
         return dialogsPanel;
     }
 

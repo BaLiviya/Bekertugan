@@ -166,7 +166,6 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
             }
             dialogRepository.save(dialogToSend);
             Broadcaster.newDialog(dialogToSend);
-            DummyDialogData.addNewDialog(dialogToSend);
 
             }
         }
