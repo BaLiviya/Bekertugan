@@ -146,6 +146,7 @@ class ChatWindow extends AbsoluteLayout implements Broadcaster.BotUpdatesListene
     @Override
     public void receiveBroadcast(Update update) {
         lastMessageId = Long.valueOf(update.getMessage().getMessageId());
+        if (chatId.equals(String.valueOf(update.getMessage().getChatId())))
         getUI().access(() -> postMessage(
                 update.getMessage().getFrom().getFirstName(),
                 LocalDateTime.now(),

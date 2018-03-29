@@ -33,6 +33,7 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
     private Button showMore;
     private ConcurrentHashMap<Long, Image> avatars;
     private ConcurrentLinkedDeque<VerticalLayout> dialogList;
+    private boolean inChatWindow;
 
 
 
@@ -43,15 +44,14 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
         content.setSizeFull();
         dialogList = new ConcurrentLinkedDeque<>();
         avatars = new ConcurrentHashMap<>();
-        BotBoardEventBus.register(this);
         initDialogs();
-        Broadcaster.registerDialogListener(this);
-        Broadcaster.register(this);
     }
     //Because idea lies
     @SuppressWarnings("unused")
     @Subscribe
     public void comeBackFromChatWindow(final BotBoardEvent.BackToDialogsFromChatEvent e){
+        inChatWindow = false;
+        Broadcaster.registerDialogListener(this);
         getUI().access(()->setContent(fatherOfTheWorld));
     }
 
@@ -79,21 +79,40 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
 
 
     @Override
+    public void attach() {
+        BotBoardEventBus.register(this);
+        Broadcaster.registerDialogListener(this);
+        Broadcaster.register(this);
+        super.attach();
+    }
+
+    @Override
     public void detach() {
-        BotBoardEventBus.unregister(this);
-        Broadcaster.unregisterDialogsListener(this);
-        Broadcaster.unregister(this);
+        try {
+            BotBoardEventBus.unregister(this);
+            Broadcaster.unregisterDialogsListener(this);
+            Broadcaster.unregister(this);
+            //Sometimes we have already unregister from event bus and this exception occurs
+        } catch (java.lang.IllegalArgumentException e){
+            if (!e.toString().contains("missing event subscriber for an annotated method"))
+                e.printStackTrace();
+        }
         super.detach();
     }
 
     @Override
     public void receiveBroadcast(Dialog dialog) {
-        try {
-            getUI().access(() -> addDialogToHead(getDialogLayOut(dialog)));
-            //I don't know why, but i think its because spring creates more than one servlet
-            //This exception come every access when i tried update dialog list
-        } catch (com.vaadin.ui.UIDetachedException ignored)
-        {}
+        if (inChatWindow){
+            addDialogToHead(getDialogLayOut(dialog));
+        }
+        else {
+            try {
+                getUI().access(() -> addDialogToHead(getDialogLayOut(dialog)));
+                //I don't know why, but i think its because spring creates more than one servlet
+                //This exception come every access when i tried update dialog list
+            } catch (com.vaadin.ui.UIDetachedException ignored) {
+            }
+        }
     }
 
     private void addDialogToTail(VerticalLayout dialog){
@@ -103,9 +122,7 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
     }
 
     private void addDialogToHead(VerticalLayout dialog){
-        if (dialogList.contains(dialog)){
-            dialogList.remove(dialog);
-        }
+        dialogList.remove(dialog);
         dialogList.addFirst(dialog);
         //Check are allowed unlimited dialogs per pager or not, if not we should kill the last
         if (!allowedUnlimitedDialogsPerPage && dialogList.size()>DIALOGS_PER_PAGE) dialogList.removeLast();
@@ -141,6 +158,7 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
     }
 
     private void loginButtonClick(Button.ClickEvent e) {
+        inChatWindow = true;
         String chatId = e.getButton().getId();
         Image a = new Image();
         a.setSource(avatars.get(Long.valueOf(chatId)).getSource());
@@ -167,7 +185,9 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
                     x -> x.getId().equals(chatId)).findFirst()
                     .orElse(getDialogLayOut(dialogRepository.findOne(Long.valueOf(chatId))));
             addDialogToHead(updatedDialog);
-            getUI().access(()->setContent(fatherOfTheWorld));
+            if (!inChatWindow) {
+                getUI().access(() -> setContent(fatherOfTheWorld));
+            }
         }
 
     }

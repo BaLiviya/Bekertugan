@@ -8,13 +8,9 @@ import kz.rbots.bekertugan.front.view.dashboard.DashboardView;
 import kz.rbots.bekertugan.front.view.reports.ReportsView;
 
 public enum DashboardViewType {
-    DASHBOARD("dashboard", DashboardView.class, VaadinIcons.HOME, true),
+    DASHBOARD("dialogs", DashboardView.class, VaadinIcons.CHAT, true),
     ANALYTICS ("analytics", Analytics.class, VaadinIcons.BAR_CHART, true),
-//    TRANSACTIONS("transactions", TransactionsView.class, VaadinIcons.TABLE, false),
-    REPORTS(
-            "reports", ReportsView.class, VaadinIcons.FILE_TEXT_O, true);
-//    SCHEDULE(
-//            "schedule", ScheduleView.class, VaadinIcons.CALENDAR_O, false);
+    REPORTS("reports", ReportsView.class, VaadinIcons.FILE_TEXT_O, true);
 
     private final String viewName;
     private final Class<? extends View> viewClass;

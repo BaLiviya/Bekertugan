@@ -3,6 +3,7 @@ package kz.rbots.bekertugan.front.view.dashboard;
 
 import com.vaadin.annotations.Push;
 import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewBeforeLeaveEvent;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.Responsive;
 import com.vaadin.ui.*;
@@ -18,6 +19,7 @@ public final class DashboardView extends Panel implements View,
     private Label titleLabel;
     private CssLayout dashboardPanels;
     private final VerticalLayout root;
+    private DialogsPanel dialogsPanel;
 
     private VerticalLayout chat;
     Component content;
@@ -98,17 +100,10 @@ public final class DashboardView extends Panel implements View,
     }
 
     private Component buildDialog() {
-        DialogsPanel dialogsPanel = new DialogsPanel();
+        dialogsPanel = new DialogsPanel();
         dialogsPanel.setSizeFull();
         return dialogsPanel;
     }
-
-
-
-
-
-
-
 
 
     @Override
@@ -121,55 +116,5 @@ public final class DashboardView extends Panel implements View,
         titleLabel.setValue(name);
     }
 
-//    //TODO Тут надо захуярить обнову
-//    @Override
-//    public void receiveBroadcast(Update update) {
-//        getUI().access(()->
-//        {
-//            chat.removeAllComponents();
-//            chat.addComponent(new Label(String.valueOf(LocalDateTime.now().getSecond())));
-//            root.addComponent(new Label(update.getMessage().getText()));
-//            System.out.println("rot ebal");
-//
-//        });
-//    }
-
-
-//    public static final class NotificationsButton extends Button {
-//        private static final String STYLE_UNREAD = "unread";
-//        static final String ID = "dashboard-notifications";
-//
-//        NotificationsButton() {
-//            setIcon(VaadinIcons.BELL);
-//            setId(ID);
-//            addStyleName("notifications");
-//            addStyleName(ValoTheme.BUTTON_ICON_ONLY);
-//            BotBoardEventBus.register(this);
-//        }
-//
-//        @Subscribe
-//        public void updateNotificationsCount(
-//                final BotBoardEvent.NotificationsCountUpdatedEvent event) {
-//            setUnreadCount(1
-////                    BotBoardUI.getDataProvider()
-////                    .getUnreadNotificationsCount()
-//            );
-//        }
-//
-//
-//
-//        public void setUnreadCount(final int count) {
-//            setCaption(String.valueOf(count));
-//
-//            String description = "Notifications";
-//            if (count > 0) {
-//                addStyleName(STYLE_UNREAD);
-//                description += " (" + count + " unread)";
-//            } else {
-//                removeStyleName(STYLE_UNREAD);
-//            }
-//            setDescription(description);
-//        }
-//    }
 
 }
