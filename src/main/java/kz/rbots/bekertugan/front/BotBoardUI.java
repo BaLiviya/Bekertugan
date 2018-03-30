@@ -84,6 +84,11 @@ public final class BotBoardUI extends UI {
     }
 
 
+    @Override
+    public void detach() {
+        BotBoardEventBus.post(new BotBoardEvent.SessionExpiredEvent());
+        super.detach();
+    }
 
     @Subscribe
     public void userLoggedOut(final BotBoardEvent.UserLoggedOutEvent event) {

@@ -39,6 +39,10 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
 
     public DialogsPanel() {
         super();
+        init();
+    }
+
+    private void init(){
         fatherOfTheWorld.setSizeFull();
         setContent(fatherOfTheWorld);
         content.setSizeFull();
@@ -46,6 +50,7 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
         avatars = new ConcurrentHashMap<>();
         initDialogs();
     }
+
     //Because idea lies
     @SuppressWarnings("unused")
     @Subscribe
@@ -56,6 +61,7 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
     }
 
     private void initDialogs(){
+        fatherOfTheWorld.removeAllComponents();
         List<Dialog>dialogs = Lists.newArrayList(dialogRepository.findSomeFirstByOrderMessageISNewer(DIALOGS_PER_PAGE));
         this.setSizeFull();
         if (dialogs.isEmpty()){
@@ -83,20 +89,14 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
         BotBoardEventBus.register(this);
         Broadcaster.registerDialogListener(this);
         Broadcaster.register(this);
+        inChatWindow = false;
         super.attach();
     }
 
+
     @Override
     public void detach() {
-        try {
-            BotBoardEventBus.unregister(this);
-            Broadcaster.unregisterDialogsListener(this);
-            Broadcaster.unregister(this);
-            //Sometimes we have already unregister from event bus and this exception occurs
-        } catch (java.lang.IllegalArgumentException e){
-            if (!e.toString().contains("missing event subscriber for an annotated method"))
-                e.printStackTrace();
-        }
+        inChatWindow = true;
         super.detach();
     }
 
@@ -190,6 +190,23 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
             }
         }
 
+    }
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void userLogOut(final BotBoardEvent.UserLoggedOutEvent e){
+        unregisterAndUnsubscribe();
+    }
+    //If session is end by time
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void sessionExpired(final BotBoardEvent.SessionExpiredEvent e){
+        unregisterAndUnsubscribe();
+    }
+
+    private void unregisterAndUnsubscribe(){
+        BotBoardEventBus.unregister(this);
+        Broadcaster.unregisterDialogsListener(this);
+        Broadcaster.unregister(this);
     }
 
     private void loadMoreDialogs(){

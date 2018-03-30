@@ -79,14 +79,14 @@ public class BotBoardEvent {
     public static class UserLoggedOutEvent {
     }
 
+    public static class SessionExpiredEvent {
+
+    }
+
     public static class NotificationsCountUpdatedEvent {
     }
 
     public static class BrowserResizeEvent {
     }
-    @RequiredArgsConstructor
-    public static final class MessageFromBot{
-        @Getter
-        private final Message message;
-    }
+
 }
