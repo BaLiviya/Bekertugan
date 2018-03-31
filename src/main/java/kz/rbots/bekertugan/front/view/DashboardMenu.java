@@ -81,8 +81,6 @@ public class DashboardMenu extends CustomComponent {
 
     @Subscribe
     public void updateUserName(final BotBoardEvent.ProfileUpdatedEvent event) {
-//        UserDetails user = getCurrentUser();
-//        settingsItem.setText(user.getUsername());
     }
 
     private Component buildToggleButton() {
@@ -148,7 +146,6 @@ public class DashboardMenu extends CustomComponent {
     @Override
     public void attach() {
         super.attach();
-        updateNotificationsCount(null);
     }
 
     @Subscribe
@@ -157,20 +154,6 @@ public class DashboardMenu extends CustomComponent {
         getCompositionRoot().removeStyleName(STYLE_VISIBLE);
     }
 
-    @Subscribe
-    public void updateNotificationsCount(
-            final BotBoardEvent.NotificationsCountUpdatedEvent event) {
-        int unreadNotificationsCount = BotBoardUI.getDataProvider()
-                .getUnreadNotificationsCount();
-        notificationsBadge.setValue(String.valueOf(unreadNotificationsCount));
-        notificationsBadge.setVisible(unreadNotificationsCount > 0);
-    }
-
-//    @Subscribe
-//    public void updateReportsCount(final ReportsCountUpdatedEvent event) {
-//        reportsBadge.setValue(String.valueOf(event.getCount()));
-//        reportsBadge.setVisible(event.getCount() > 0);
-//    }
 
 
 

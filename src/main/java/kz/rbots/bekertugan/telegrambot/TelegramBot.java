@@ -4,10 +4,10 @@ import kz.rbots.bekertugan.broadcaster.Broadcaster;
 import kz.rbots.bekertugan.entities.BotMessage;
 import kz.rbots.bekertugan.entities.Dialog;
 import kz.rbots.bekertugan.front.data.DialogRepository;
-import kz.rbots.bekertugan.front.data.mock.DummyDialogData;
 import kz.rbots.bekertugan.telegrambot.utils.TelegramBotExecutorUtil;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -25,13 +25,18 @@ import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 @Singleton
 @Component
 @Setter
 @Getter
+@Slf4j
 public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.TelegramMessageSender {
     private final DialogRepository dialogRepository;
     private final kz.rbots.bekertugan.front.data.BotMessagesRepository BotMessagesRepository;
+    private ConcurrentMap<Long, Conversation> conversations = new ConcurrentHashMap<>();
 
     private static String crutchBotUsername;
 
@@ -59,11 +64,46 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
 
     @Override
     public void onUpdateReceived(Update update) {
+        operateUpdate(update);
+
+        //First of all i thought i will move this stuff to conversation logic
+        //But front-end logic is independent of conversation logic, so i left it's here
+        //In future it's can be changed
         if (update.hasMessage() && update.getMessage().hasText()) {
             addAndBroadcastDialogIfNotAdded(update);
             broadcastAllData(update);
             saveAllUpdateData(update);
         }
+    }
+
+    private Long getChatId(Update update){
+        if (update.hasMessage()){
+            if (Long.valueOf(update.getMessage().getFrom().getId()).equals(update.getMessage().getChatId()))
+                return update.getMessage().getChatId();
+            return update.getMessage().getChatId();
+        }
+        if (update.hasCallbackQuery()) return Long.valueOf(update.getCallbackQuery().getFrom().getId());
+        if (update.hasPreCheckoutQuery()) return Long.valueOf(update.getPreCheckoutQuery().getFrom().getId());
+        if (update.hasShippingQuery()) return Long.valueOf(update.getShippingQuery().getFrom().getId());
+        else return Long.valueOf(update.getChosenInlineQuery().getFrom().getId());
+    }
+
+    private void operateUpdate(Update update){
+        TelegramBotExecutorUtil.Execute(()->{
+            Long chatId = getChatId(update);
+            getConversation(chatId).operate(update);
+        });
+    }
+
+    private Conversation getConversation(Long chatId){
+        return conversations.computeIfAbsent(chatId, this::createAndGetConversation);
+    }
+
+    private Conversation createAndGetConversation(Long chatId){
+        Conversation conversation = chatId < 0 ? new Conversation(true, this, chatId)
+                : new Conversation(false, this, chatId);
+        log.info("TELEGRAM BOT: Initiated new conversation for chat id - " + chatId );
+        return conversation;
     }
 
     @Override

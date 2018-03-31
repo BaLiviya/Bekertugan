@@ -14,6 +14,9 @@ public class TelegramBotExecutorUtil {
     @Setter
     private static TelegramBot telegramBot;
 
+    public static void Execute(Runnable runnable){
+        pool.execute(runnable);
+    }
 
     public static String getActualURLForAvatar(Integer userId){
        final Future<String> stringFuture = pool.submit(() -> telegramBot.getFilePathById(
