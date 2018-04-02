@@ -1,7 +1,6 @@
 package kz.rbots.bekertugan.front.view.analytics;
 
 import com.vaadin.navigator.View;
-import com.vaadin.navigator.ViewBeforeLeaveEvent;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.ui.*;
 import kz.rbots.bekertugan.broadcaster.Broadcaster;

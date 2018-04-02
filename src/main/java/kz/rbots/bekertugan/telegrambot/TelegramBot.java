@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.TelegramBotsApi;
+import org.telegram.telegrambots.api.methods.BotApiMethod;
 import org.telegram.telegrambots.api.methods.GetFile;
 import org.telegram.telegrambots.api.methods.GetUserProfilePhotos;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
@@ -19,10 +20,12 @@ import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.PhotoSize;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -123,8 +126,9 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
     @Override
     public void receiveBroadcast(SendMessage sendMessage) {
         try {
-            Message m = this.execute(sendMessage);
-            saveSendMessageToRep(m);
+//            Message m =
+                    this.execute(sendMessage);
+//            saveSendMessageToRep(m);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
@@ -209,6 +213,18 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
 
             }
         }
+
+    @Override
+    public <T extends Serializable, Method extends BotApiMethod<T>> T execute(Method method) throws TelegramApiException {
+        if (method instanceof SendMessage){
+            T t = super.execute(method);
+            Message message = (Message) t;
+            saveSendMessageToRep(message);
+            Broadcaster.newSendMessageWithText(message);
+            return t;
+        }
+        return super.execute(method);
     }
+}
 
 

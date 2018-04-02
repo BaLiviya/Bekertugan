@@ -18,6 +18,7 @@ import kz.rbots.bekertugan.front.event.BotBoardEventBus;
 import kz.rbots.bekertugan.telegrambot.TelegramBot;
 import kz.rbots.bekertugan.telegrambot.utils.TelegramBotExecutorUtil;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 
 import java.time.LocalDateTime;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @PreserveOnRefresh
-class ChatWindow extends AbsoluteLayout implements Broadcaster.BotUpdatesListener {
+class ChatWindow extends AbsoluteLayout implements Broadcaster.BotUpdatesListener, Broadcaster.TelegramBotTextMessageSendsListener {
     private final TextField textField = new TextField("Type text here: ");
     private Button sendButton = new Button("Send Message");
     private Button backToDialogs = new Button("Return");
@@ -50,6 +51,7 @@ class ChatWindow extends AbsoluteLayout implements Broadcaster.BotUpdatesListene
         this.avatar = avatar;
         initEnterTextLayout(chatId);
         Broadcaster.register(this);
+        Broadcaster.registerTextMessageListener(this);
         messagesPanel.setContent(messagesLayout);
         messagesPanel.setWidth("100%");
         messagesPanel.setHeight("80%");
@@ -74,6 +76,7 @@ class ChatWindow extends AbsoluteLayout implements Broadcaster.BotUpdatesListene
 
         backToDialogs.addClickListener(e-> {
             Broadcaster.unregister(this);
+            Broadcaster.unregisterTextMessageListener(this);
             BotBoardEventBus.post(new BotBoardEvent.BackToDialogsFromChatEvent());
         });
 
@@ -220,5 +223,9 @@ class ChatWindow extends AbsoluteLayout implements Broadcaster.BotUpdatesListene
             messagesLayout.addComponent(label,1);
         }
     }
-
+    //If ve have new sent message  with text we should show that to user
+    @Override
+    public void receiveBroadCast(Message message) {
+        getUI().access(() -> postMessage(message.getFrom().getUserName(),LocalDateTime.now(),message.getText()));
+    }
 }

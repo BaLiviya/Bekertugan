@@ -2,6 +2,7 @@ package kz.rbots.bekertugan.broadcaster;
 
 import kz.rbots.bekertugan.entities.Dialog;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 
 import java.io.Serializable;
@@ -27,9 +28,24 @@ public class Broadcaster implements Serializable {
         void receiveBroadcast(Dialog dialog);
     }
 
+    public interface TelegramBotTextMessageSendsListener {
+        void receiveBroadCast(Message message);
+    }
+
     private static LinkedList<BotUpdatesListener> botListeners = new LinkedList<>();
     private static LinkedList<TelegramMessageSender> telegramListeners = new LinkedList<>();
     private static LinkedList<TelegramDialogsUpdateListener> dialogsListeners = new LinkedList<>();
+    private static LinkedList<TelegramBotTextMessageSendsListener> telegramSendMessagesListener = new LinkedList<>();
+
+    public static synchronized void registerTextMessageListener(
+            TelegramBotTextMessageSendsListener listener) {
+        telegramSendMessagesListener.add(listener);
+    }
+
+    public static synchronized void unregisterTextMessageListener(
+            TelegramBotTextMessageSendsListener listener) {
+        telegramSendMessagesListener.remove(listener);
+    }
 
     public static synchronized void register(
             BotUpdatesListener listener) {
@@ -44,6 +60,13 @@ public class Broadcaster implements Serializable {
     public static synchronized void registerDialogListener(
             TelegramDialogsUpdateListener telegramDialogsUpdateListner){
         dialogsListeners.add(telegramDialogsUpdateListner);
+    }
+
+    public static synchronized void newSendMessageWithText(
+            final Message message) {
+        for (final TelegramBotTextMessageSendsListener listener : telegramSendMessagesListener){
+            executorService.execute(()->listener.receiveBroadCast(message));
+        }
     }
 
     public static synchronized void newDialog(
@@ -76,6 +99,6 @@ public class Broadcaster implements Serializable {
 
     public static synchronized void unregisterDialogsListener(
             TelegramDialogsUpdateListener listener) {
-        telegramListeners.remove(listener);
+        dialogsListeners.remove(listener);
     }
 }
