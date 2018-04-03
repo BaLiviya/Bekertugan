@@ -126,9 +126,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
     @Override
     public void receiveBroadcast(SendMessage sendMessage) {
         try {
-//            Message m =
-                    this.execute(sendMessage);
-//            saveSendMessageToRep(m);
+            this.execute(sendMessage);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
@@ -219,9 +217,11 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
         if (method instanceof SendMessage){
             T t = super.execute(method);
             Message message = (Message) t;
-            saveSendMessageToRep(message);
-            Broadcaster.newSendMessageWithText(message);
-            return t;
+            if (message.hasText()) {
+                saveSendMessageToRep(message);
+                Broadcaster.newSendMessageWithText(message);
+                return t;
+            }
         }
         return super.execute(method);
     }
