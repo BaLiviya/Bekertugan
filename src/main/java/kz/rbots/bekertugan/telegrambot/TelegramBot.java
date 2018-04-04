@@ -199,13 +199,10 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
             String firstName    = update.getMessage().getFrom().getFirstName();
             String lastName     = update.getMessage().getFrom().getLastName();
             String userName     = update.getMessage().getFrom().getUserName();
-            String lastAvatar   = getLastAvatarFileId(update.getMessage().getFrom().getId());
-            Dialog dialogToSend = new Dialog(update.getMessage().getChatId(), firstName, lastName, userName,null);
+            long chatId = update.getMessage().getChatId();
+            Dialog dialogToSend = new Dialog(chatId, firstName, lastName, userName,chatId < 0);
 
-            if (lastAvatar!=null){
-                String avatarFileId = getFilePathById(lastAvatar);
-                dialogToSend.setAvatarFileId(avatarFileId);
-            }
+
             dialogRepository.save(dialogToSend);
             Broadcaster.newDialog(dialogToSend);
 

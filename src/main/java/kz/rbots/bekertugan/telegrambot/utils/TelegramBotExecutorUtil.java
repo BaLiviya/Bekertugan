@@ -2,8 +2,6 @@ package kz.rbots.bekertugan.telegrambot.utils;
 
 import kz.rbots.bekertugan.telegrambot.TelegramBot;
 import lombok.Setter;
-import org.telegram.telegrambots.api.methods.GetFile;
-import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import java.util.concurrent.*;
 
@@ -18,12 +16,16 @@ public class TelegramBotExecutorUtil {
         pool.execute(runnable);
     }
 
+    //Here is problem with chats, bot can't get avatar of chat, or i don't know how to do this
     public static String getActualURLForAvatar(Integer userId){
        final Future<String> stringFuture = pool.submit(() -> telegramBot.getFilePathById(
                telegramBot.getLastAvatarFileId(userId)));
+
         try {
-            return "https://api.telegram.org/file/bot"
-                    + telegramBot.getBotToken() + "/" + stringFuture.get();
+            if (stringFuture.get()!=null) {
+                return "https://api.telegram.org/file/bot"
+                        + telegramBot.getBotToken() + "/" + stringFuture.get();
+            } else return null;
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
             return null;
@@ -38,13 +40,6 @@ public class TelegramBotExecutorUtil {
         } catch (InterruptedException | ExecutionException ignored) {
             return null;
         }
-//        GetFile getFile = new GetFile();
-//        getFile.setFileId(fileId);
-//        try {
-//            return telegramBot.execute(getFile).getFilePath();
-//        } catch (TelegramApiException ignored) {
-//            return null;
-//        }
     }
 
 

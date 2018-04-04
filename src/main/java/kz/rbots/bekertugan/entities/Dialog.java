@@ -19,15 +19,16 @@ public class Dialog {
     private  String firstName;
     private  String lastName;
     private  String userName;
-    @Setter
-    private String avatarFileId;
 
-    public Dialog(Long chatId, String firstName, String lastName, String userName, String avatarFileId) {
+
+    private Boolean isGroup;
+
+    public Dialog(Long chatId, String firstName, String lastName, String userName, boolean isGroup) {
         this.chatId = chatId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.userName = userName;
-        this.avatarFileId = avatarFileId;
+        this.isGroup = isGroup;
     }
 
     protected Dialog() {

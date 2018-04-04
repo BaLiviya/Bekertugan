@@ -133,23 +133,36 @@ public class DialogsPanel extends Panel implements Broadcaster.TelegramDialogsUp
     private VerticalLayout getDialogLayOut(Dialog dialog){
         VerticalLayout dialogLayout = new VerticalLayout();
         Image avatar;
-        if (dialog.getAvatarFileId()!=null) {
-            avatar = getAvatarViaURL(TelegramBotExecutorUtil.getActualURLForAvatar(Math.toIntExact(dialog.getChatId())));
+
+        String avatarUrl = TelegramBotExecutorUtil.getActualURLForAvatar(Math.toIntExact(dialog.getChatId()));
+        if (avatarUrl!=null) {
+
+            avatar = getAvatarViaURL(avatarUrl);
+
         } else {
+
             avatar = getAvatarViaURL("https://pickaface.net/assets/images/not-found.jpg");
+
         }
+
         avatars.put(dialog.getChatId(),avatar);
+
         dialogLayout.addComponent(avatar);
         dialogLayout.setId(String.valueOf(dialog.getChatId()));
+
         String dialogButtonText = dialog.getUserName() != null ? "@" + dialog.getUserName() : dialog.getFirstName();
         Button dialogButton = new Button(dialogButtonText);
+
         Label label = new Label(dialog.getFirstNameAndLast());
         dialogLayout.addComponent(label);
+
         String chatIdForID = String.valueOf(dialog.getChatId());
+
         dialogLayout.setId(chatIdForID);
         dialogButton.setId(chatIdForID);
         dialogButton.addClickListener(this::loginButtonClick);
         dialogLayout.addComponent(dialogButton);
+
         return dialogLayout;
     }
 
