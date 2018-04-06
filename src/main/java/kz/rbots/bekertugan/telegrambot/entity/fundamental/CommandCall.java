@@ -8,17 +8,15 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@AllArgsConstructor
 @Getter
-@Table(name = "button")
-public class Button {
+@AllArgsConstructor
+@Table(name = "command_call")
+public class CommandCall {
     @Id
-    private long   id;
-    private String buttonText;
-    private String URL;
-    private int commandCallId;
-    private String requestType;
+    private int id;
+    private String arguments;
+    private int commandTypeId;
 
-    public Button() {
+    public CommandCall() {
     }
 }
