@@ -12,16 +12,22 @@ public class TelegramBotRepositoryProvider {
 
     private static CommandCallRepository commandCallRepository;
 
+    private static KeyboardRepository keyboardRepository;
+
     @Autowired
     public TelegramBotRepositoryProvider(
             ButtonRepository buttonRepository,
             MessageRepository messageRepository,
-            CommandCallRepository commandCallRepository) {
+            CommandCallRepository commandCallRepository,
+            KeyboardRepository keyboardRepository) {
 
         setButtonRepository(buttonRepository);
+
         setMessageRepository(messageRepository);
+
         setCommandCallRepository(commandCallRepository);
 
+        setKeyboardRepository(keyboardRepository);
     }
 
     private static void setButtonRepository(ButtonRepository buttonRepository) {
@@ -36,6 +42,10 @@ public class TelegramBotRepositoryProvider {
         TelegramBotRepositoryProvider.commandCallRepository = commandCallRepository;
     }
 
+    private static void setKeyboardRepository(KeyboardRepository keyboardRepository) {
+        TelegramBotRepositoryProvider.keyboardRepository = keyboardRepository;
+    }
+
     public static ButtonRepository getButtonRepository() {
         return buttonRepository;
     }
@@ -46,5 +56,9 @@ public class TelegramBotRepositoryProvider {
 
     public static CommandCallRepository getCommandCallRepository() {
         return commandCallRepository;
+    }
+
+    public static KeyboardRepository getKeyboardRepository() {
+        return keyboardRepository;
     }
 }

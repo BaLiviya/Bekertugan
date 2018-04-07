@@ -18,6 +18,7 @@ public class Button {
     private String URL;
     private int commandCallId;
     private String requestType;
+    private String callbackData;
 
     public Button() {
     }

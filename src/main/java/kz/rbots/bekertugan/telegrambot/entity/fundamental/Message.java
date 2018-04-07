@@ -15,7 +15,7 @@ public class Message {
     @Id
     private long   id;
     private String messageText;
-    private long   keyboardId;
+    private int    keyboardId;
 
     public Message() {
     }
