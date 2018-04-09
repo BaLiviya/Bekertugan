@@ -3,7 +3,6 @@ package kz.rbots.bekertugan.front.view.dashboard;
 
 import com.vaadin.annotations.Push;
 import com.vaadin.navigator.View;
-import com.vaadin.navigator.ViewBeforeLeaveEvent;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.Responsive;
 import com.vaadin.ui.*;

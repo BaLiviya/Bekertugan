@@ -19,7 +19,13 @@ public class Button {
     private int commandCallId;
     private String requestType;
     private String callbackData;
+    private String comment;
 
     public Button() {
+    }
+
+    @Override
+    public String toString() {
+        return id + " " + buttonText;
     }
 }

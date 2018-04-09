@@ -1,19 +1,18 @@
 package kz.rbots.bekertugan.front.view;
 
 import com.google.common.eventbus.Subscribe;
-import com.vaadin.annotations.Push;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import kz.rbots.bekertugan.entities.User;
-import kz.rbots.bekertugan.front.BotBoardUI;
 import kz.rbots.bekertugan.front.event.BotBoardEvent;
 import kz.rbots.bekertugan.front.event.BotBoardEventBus;
+
 public class DashboardMenu extends CustomComponent {
     public static final String ID = "dashboard-menu";
-    public static final String REPORTS_BADGE_ID = "dashboard-menu-reports-badge";
+    public static final String REPORTS_BADGE_ID = "dashboard-menu-telegramBotsEditor-badge";
     public static final String NOTIFICATIONS_BADGE_ID = "dashboard-menu-notifications-badge";
     private static final String STYLE_VISIBLE = "valo-menu-visible";
     private Label notificationsBadge;
@@ -112,7 +111,7 @@ public class DashboardMenu extends CustomComponent {
                 menuItemComponent = buildBadgeWrapper(menuItemComponent,
                         notificationsBadge);
             }
-            if (view == DashboardViewType.REPORTS) {
+            if (view == DashboardViewType.EDITOR) {
                 reportsBadge = new Label();
                 reportsBadge.setId(REPORTS_BADGE_ID);
                 menuItemComponent = buildBadgeWrapper(menuItemComponent,

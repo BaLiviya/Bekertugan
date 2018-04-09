@@ -5,12 +5,12 @@ import com.vaadin.navigator.View;
 import com.vaadin.server.Resource;
 import kz.rbots.bekertugan.front.view.analytics.Analytics;
 import kz.rbots.bekertugan.front.view.dashboard.DashboardView;
-import kz.rbots.bekertugan.front.view.reports.ReportsView;
+import kz.rbots.bekertugan.front.view.telegramBotsEditor.EditorView;
 
 public enum DashboardViewType {
     DASHBOARD("dialogs", DashboardView.class, VaadinIcons.CHAT, true),
     ANALYTICS ("analytics", Analytics.class, VaadinIcons.BAR_CHART, true),
-    REPORTS("reports", ReportsView.class, VaadinIcons.FILE_TEXT_O, true);
+    EDITOR("telegram Bot Editor", EditorView.class, VaadinIcons.FILE_TEXT_O, true);
 
     private final String viewName;
     private final Class<? extends View> viewClass;
