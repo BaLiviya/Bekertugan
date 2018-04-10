@@ -19,15 +19,6 @@ public class LoginView extends VerticalLayout {
         addComponent(loginForm);
         setComponentAlignment(loginForm, Alignment.MIDDLE_CENTER);
 
-//        Notification notification = new Notification(
-//                "Welcome to bot board ");
-//        notification
-//                .setDescription("<span>This application is not real, it only demonstrates an application built with the <a href=\"https://vaadin.com\">Vaadin framework</a>.</span> <span>No username or password is required, just click the <b>Sign In</b> button to continue.</span>");
-//        notification.setHtmlContentAllowed(true);
-//        notification.setStyleName("tray dark small closable login-help");
-//        notification.setPosition(Position.BOTTOM_CENTER);
-//        notification.setDelayMsec(20000);
-//        notification.show(Page.getCurrent());
     }
 
     private Component buildLoginForm() {
