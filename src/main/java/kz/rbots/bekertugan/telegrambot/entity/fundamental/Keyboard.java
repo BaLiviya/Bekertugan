@@ -4,9 +4,11 @@ import lombok.Getter;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Getter
+@Table(name = "keyboard")
 public class Keyboard {
 
     @Id
@@ -19,5 +21,10 @@ public class Keyboard {
     private String comment;
 
     public Keyboard() {
+    }
+
+    @Override
+    public String toString() {
+        return id + " " + comment ;
     }
 }

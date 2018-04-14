@@ -31,9 +31,9 @@ class ButtonEditor extends Panel {
 
     private com.vaadin.ui.Button deleteButton = new com.vaadin.ui.Button("Delete Button");
 
-    private com.vaadin.ui.Button newButton    = new com.vaadin.ui.Button("new Button");
+    private com.vaadin.ui.Button newButton    = new com.vaadin.ui.Button("New button");
 
-    private List<Button> btnsList               = btnRepo.findAllByOrderByIdAsc();
+    private List<Button>         btnsList;
 
     private NativeSelect<Button> buttonsList;
 
@@ -59,7 +59,7 @@ class ButtonEditor extends Panel {
 
         content.setSizeFull();
 
-        content.addComponent(getSelector(),"top: 5%;");
+        content.addComponent(initAndGetSelector(),"top: 5%;");
 
         content.addComponent(buttonTextField, "top: 19%");
 
@@ -81,15 +81,15 @@ class ButtonEditor extends Panel {
 
     }
 
-    private NativeSelect<Button> getSelector(){
+    private NativeSelect<Button> initAndGetSelector(){
 
         buttonsList = new NativeSelect<>();
 
-        btnsList = btnRepo.findAllByOrderByIdAsc();
+        btnsList    = btnRepo.findAllByOrderByIdAsc();
 
         buttonsList.setItems(btnsList);
 
-        buttonsList.addValueChangeListener( x -> setButtonInfo(x.getValue()) );
+        buttonsList.addValueChangeListener( x -> showButtonInfo(x.getValue()) );
 
         buttonsList.setCaption("Selected button");
 
@@ -97,7 +97,7 @@ class ButtonEditor extends Panel {
 
     }
 
-    private void setButtonInfo(Button selectedButton){
+    private void showButtonInfo(Button selectedButton){
 
         if (selectedButton==null) return;
 
@@ -160,7 +160,7 @@ class ButtonEditor extends Panel {
 
         try {
 
-           setButtonInfo(btnRepo.save(buttonToSave));
+           showButtonInfo(btnRepo.save(buttonToSave));
 
            buttonsList.setItems(btnsList);
 
@@ -259,7 +259,7 @@ class ButtonEditor extends Panel {
 
             buttonsList.setItems(btnsList);
 
-            setButtonInfo(newButton);
+            showButtonInfo(newButton);
 
             buttonsList.setValue(newButton);
 

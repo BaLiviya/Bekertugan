@@ -10,7 +10,7 @@ public final class EditorView extends GridLayout implements View {
 
     private Panel buttonsPanel     = new ButtonEditor();
 
-    private Panel keyboardsPanel   = new Panel("Keyboards info");
+    private Panel keyboardsPanel   = new KeyboardEditor();
 
     private Panel messagesPanel    = new Panel("Messages info");
 
