@@ -15,13 +15,11 @@ import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.api.methods.BotApiMethod;
 import org.telegram.telegrambots.api.methods.GetFile;
 import org.telegram.telegrambots.api.methods.GetUserProfilePhotos;
-import org.telegram.telegrambots.api.methods.groupadministration.SetChatTitle;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.PhotoSize;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import javax.annotation.PostConstruct;
@@ -51,19 +49,31 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
     private String botToken;
 
     @Autowired
-    public TelegramBot(DialogRepository dialogRepository, kz.rbots.bekertugan.front.data.BotMessagesRepository botMessagesRepository) {
+    public TelegramBot(DialogRepository dialogRepository, kz.rbots.bekertugan.front.data.BotMessagesRepository botMessagesRepository, ProxyConfiguration proxyConfiguration) {
+
+        super(proxyConfiguration.getBotOptions());
+
         this.dialogRepository = dialogRepository;
+
         BotMessagesRepository = botMessagesRepository;
+
     }
 
     @PostConstruct
     public void initIt() throws Exception {
+
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
+
         telegramBotsApi.registerBot(this);
+
         System.out.println("Bot is online");
+
         Broadcaster.registerBot(this);
+
         TelegramBotExecutorUtil.setTelegramBot(this);
+
         crutchBotUsername = botUsername;
+
     }
 
     @Override
@@ -74,9 +84,13 @@ public class TelegramBot extends TelegramLongPollingBot implements Broadcaster.T
         //But front-end logic is independent of conversation logic, so i left it's here
         //In future it's can be changed
         if (update.hasMessage() && update.getMessage().hasText()) {
+
             addAndBroadcastDialogIfNotAdded(update);
+
             broadcastAllData(update);
+
             saveAllUpdateData(update);
+
         }
     }
 
